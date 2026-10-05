@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:3000
+
+### 1. HU 1.1 - Registrar signos vitales (Prueba de fiebre > 39°C dispara alerta)
+POST {{baseUrl}}/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+    "patientId": "carlos-lopez-id",
+    "nurseId": "martin-torres-id",
+    "roomNumber": "204",
+    "bloodPressure": "120/80",
+    "heartRate": 88,
+    "temperature": 39.5
+}
+
+### 2. HU 2.1 - Generar protocolo de atención automático con Patrón Builder
+POST {{baseUrl}}/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+    "patientId": "carlos-lopez-id",
+    "admissionReason": "PRE_OP"
+}

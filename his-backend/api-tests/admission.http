@@ -1,0 +1,24 @@
+@baseUrl = http://localhost:3000
+
+### 1. HU 1.1 - Reservar un turno disponible
+POST {{baseUrl}}/admission/appointments/book
+Content-Type: application/json
+
+{
+    "appointmentId": "turno-10am-dr-silva",
+    "patientId": "carlos-lopez-id"
+}
+
+### 2. HU 2.1 - Cambiar estado de turno (Ej: Anunciar llegada en recepción)
+PATCH {{baseUrl}}/admission/appointments/turno-10am-dr-silva/arrive
+Content-Type: application/json
+
+### 3. HU 3.1 - Ingresar paciente a cola de Triaje (Guardia)
+POST {{baseUrl}}/admission/triage
+Content-Type: application/json
+
+{
+    "patientId": "paciente-urgencia-01",
+    "triageLevel": "ROJO",
+    "symptoms": "Dolor torácico agudo"
+}
