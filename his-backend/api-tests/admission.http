@@ -1,24 +1,17 @@
 @baseUrl = http://localhost:3000
+# Pega aquí el token que te genere el Integrante 3 al hacer login
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... 
 
-### 1. HU 1.1 - Reservar un turno disponible
+### 1. Reservar un turno disponible
 POST {{baseUrl}}/admission/appointments/book
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-    "appointmentId": "turno-10am-dr-silva",
-    "patientId": "carlos-lopez-id"
+    "appointmentId": "123e4567-e89b-12d3-a456-426614174000",
+    "patientId": "paciente-carlos-789"
 }
 
-### 2. HU 2.1 - Cambiar estado de turno (Ej: Anunciar llegada en recepción)
-PATCH {{baseUrl}}/admission/appointments/turno-10am-dr-silva/arrive
-Content-Type: application/json
-
-### 3. HU 3.1 - Ingresar paciente a cola de Triaje (Guardia)
-POST {{baseUrl}}/admission/triage
-Content-Type: application/json
-
-{
-    "patientId": "paciente-urgencia-01",
-    "triageLevel": "ROJO",
-    "symptoms": "Dolor torácico agudo"
-}
+### 2. Anunciar llegada del paciente (Pasa a Sala de Espera)
+PATCH {{baseUrl}}/admission/appointments/123e4567-e89b-12d3-a456-426614174000/check-in
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTE0MDIxODEsImV4cCI6MTc5MTQzMDk4MX0.J0iz4sJ8qFFcPvmO2Ob5vHMAWhkX8jlBEfbwN2D0Jhs

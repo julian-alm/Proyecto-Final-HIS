@@ -1,28 +1,36 @@
-import { IAppointmentState, ConfirmedState } from '../states/appointment-state.interface';
+import { IAppointmentState, AvailableState } from '../states/appointment.state';
 
 export class Appointment {
     constructor(
         public readonly id: string,
         public readonly doctorId: string,
-        public patientId: string | null,
-        public startTime: Date,
-        public durationMinutes: number = 30,
-        private state: IAppointmentState = new ConfirmedState(),
+        public readonly startTime: Date,
+        public patientId: string | null = null,
+        private state: IAppointmentState = new AvailableState(),
+        public version: number = 1
     ) {}
-    
+
     get statusName(): string {
         return this.state.name;
     }
-    
-    setState(newState: IAppointmentState): void {
+
+    changeState(newState: IAppointmentState): void {
         this.state = newState;
     }
-    
-    // Delegación al Patrón State
-    announceArrival(): void {
-        this.state.checkInWaitingRoom(this);
+
+    // Los métodos delegan la acción al Estado actual (Inversión de Control)
+    book(patientId: string): void {
+        this.state.book(this, patientId);
     }
-    
+
+    checkInWaitingRoom(): void {
+        this.state.checkIn(this);
+    }
+
+    completeAttention(): void {
+        this.state.complete(this);
+    }
+
     cancel(): void {
         this.state.cancel(this);
     }
