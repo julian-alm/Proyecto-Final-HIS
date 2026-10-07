@@ -17,13 +17,13 @@ confirm(): void {
     throw new DomainException('El turno ya se encuentra confirmado.');
 }
 checkInWaitingRoom(appointment: Appointment): void {
-    appointment.setState(new WaitingRoomState());
+    (appointment as any).setState(new WaitingRoomState());
 }
 completeAttention(): void {
     throw new DomainException('El paciente debe pasar por Sala de Espera antes de ser atendido.');
 }
 cancel(appointment: Appointment): void {
-    appointment.setState(new CancelledState());
+    (appointment as any).setState(new CancelledState());
 }
 }
 
