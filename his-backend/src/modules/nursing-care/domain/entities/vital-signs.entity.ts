@@ -4,6 +4,7 @@ export class VitalSigns {
     public readonly patientId: string,
     public readonly temperature: number,
     public readonly bloodPressure: string,
+    public readonly heartRate: number,  
     public readonly recordedAt: Date = new Date()
   ) {
     if (temperature < 34 || temperature > 42) {

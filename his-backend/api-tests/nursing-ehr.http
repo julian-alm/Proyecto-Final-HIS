@@ -1,0 +1,76 @@
+### Prueba 1: Generar Protocolo Pre-Quirúrgico (Patrón Builder)
+POST http://localhost:3000/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "admissionReason": "PRE_OP"
+}
+
+### Prueba 2: Registrar Signos Vitales en Base de Datos Real
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "temperature": 38.5,
+  "bloodPressure": "120/80",
+  "heartRate": 85
+}
+
+### Prueba 3: Registrar Signos Vitales con FIEBRE ALTA (Escenario 2)
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "temperature": 40.5,
+  "bloodPressure": "130/85",
+  "heartRate": 110
+}
+### Prueba 4: Administrar Medicación (HU 1.2) - En término
+POST http://localhost:3000/nursing-care/medication/administer
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "nurseId": "enfermero-Torres",
+  "medicationName": "Ibuprofeno",
+  "dose": "400mg",
+  "scheduledTime": "2026-10-15T14:00:00Z",
+  "administeredTime": "2026-10-15T14:15:00Z"
+}
+
+### Prueba 5: Administrar Medicación (HU 1.2) - Fuera de término
+POST http://localhost:3000/nursing-care/medication/administer
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "nurseId": "enfermero-Torres",
+  "medicationName": "Ibuprofeno",
+  "dose": "400mg",
+  "scheduledTime": "2026-10-15T14:00:00Z",
+  "administeredTime": "2026-10-15T14:45:00Z"
+}
+
+### Prueba 6: Generar Protocolo Pre-Quirúrgico (HU 2.1)
+POST http://localhost:3000/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+  "patientId": "paciente-789",
+  "admissionReason": "Paciente preparado para CIRUGIA general"
+}
+
+### Prueba 7: Generar Protocolo Infección Respiratoria (HU 2.1)
+POST http://localhost:3000/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+  "patientId": "paciente-789",
+  "admissionReason": "Ingresa por cuadro de NEUMONIA atípica"
+}
+
+### Prueba 8: Consultar Historial de Signos Vitales
+GET http://localhost:3000/nursing-care/vital-signs/paciente-123
