@@ -12,10 +12,15 @@ import { MedicationAdministrationOrmEntity } from './infrastructure/persistence/
 import { VitalSignsListener } from './application/listeners/vital-signs.listener';
 import { IMedicationAdministrationRepository } from './domain/ports/medication-administration.repository.port';
 import { TypeOrmMedicationAdministrationRepository } from './infrastructure/persistence/typeorm-medication-administration.repository';
+import { IamModule } from '../iam/iam.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([VitalSignsOrmEntity,MedicationAdministrationOrmEntity]) 
+    TypeOrmModule.forFeature([
+      VitalSignsOrmEntity,
+      MedicationAdministrationOrmEntity,
+    ]),
+    IamModule, // <--- Los módulos van acá en IMPORTS 
   ],
   controllers: [NursingCareController],
   providers: [
@@ -23,12 +28,15 @@ import { TypeOrmMedicationAdministrationRepository } from './infrastructure/pers
     GenerateCareProtocolUseCase,
     AdministerMedicationUseCase,
     GetVitalSignsHistoryUseCase,
-    VitalSignsListener, // <--- Tiene que estar acá en la lista
-    { provide: IVitalSignsRepository, useClass: TypeOrmVitalSignsRepository },
+    VitalSignsListener,
+    { 
+      provide: IVitalSignsRepository, 
+      useClass: TypeOrmVitalSignsRepository 
+    },
     {
-    provide: IMedicationAdministrationRepository,
-    useClass: TypeOrmMedicationAdministrationRepository,
-  },
+      provide: IMedicationAdministrationRepository,
+      useClass: TypeOrmMedicationAdministrationRepository,
+    },
   ],
 })
 export class NursingCareModule {}
