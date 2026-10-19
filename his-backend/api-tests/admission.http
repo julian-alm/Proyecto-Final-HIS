@@ -15,3 +15,48 @@ Authorization: Bearer {{token}}
 ### 2. Anunciar llegada del paciente (Pasa a Sala de Espera)
 PATCH {{baseUrl}}/admission/appointments/123e4567-e89b-12d3-a456-426614174000/check-in
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTE0MDIxODEsImV4cCI6MTc5MTQzMDk4MX0.J0iz4sJ8qFFcPvmO2Ob5vHMAWhkX8jlBEfbwN2D0Jhs
+
+### 3. Ingresar paciente VERDE a Triaje (Urgencia Menor - Llegó primero)
+POST {{baseUrl}}/admission/triage
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTliMDljOC05YWY3LTQ1MTEtYjMwMi02M2JlZWZmMzNkZGUiLCJlbWFpbCI6Im1hcnRpbi50b3JyZXNAaG9zcGl0YWwuY29tIiwicm9sZSI6Ik5VUlNFIiwiZnVsbE5hbWUiOiJNYXJ0w61uIFRvcnJlcyIsImlhdCI6MTc5MTY2NTgyOSwiZXhwIjoxNzkxNjk0NjI5fQ.kUk8G09pq7qW-uW98cOZ0s515x-ylyNBHSLSbldtjY4
+
+{
+    "patientId": "paciente-dolor-cabeza",
+    "level": 3,
+    "symptoms": "Dolor de cabeza leve desde ayer"
+}
+
+### 4. Ingresar paciente ROJO a Triaje (Riesgo de vida - Llegó segundo)
+POST {{baseUrl}}/admission/triage
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTliMDljOC05YWY3LTQ1MTEtYjMwMi02M2JlZWZmMzNkZGUiLCJlbWFpbCI6Im1hcnRpbi50b3JyZXNAaG9zcGl0YWwuY29tIiwicm9sZSI6Ik5VUlNFIiwiZnVsbE5hbWUiOiJNYXJ0w61uIFRvcnJlcyIsImlhdCI6MTc5MTY2NTgyOSwiZXhwIjoxNzkxNjk0NjI5fQ.kUk8G09pq7qW-uW98cOZ0s515x-ylyNBHSLSbldtjY4
+
+{
+    "patientId": "paciente-infarto",
+    "level": 1,
+    "symptoms": "Dolor torácico agudo y falta de aire"
+}
+
+### 5. Médico llama al siguiente paciente (Cola de Prioridad)
+POST {{baseUrl}}/admission/triage/next
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiNjA1NmRjMi1jOWY3LTRmMTEtYWRkYy03MjMxM2VlMjRhNzgiLCJlbWFpbCI6ImdvbnphbGVzZGllZ29AaG9zcGl0YWwuY29tIiwicm9sZSI6IkRPQ1RPUiIsImZ1bGxOYW1lIjoiRGllZ28gR29uemFsZXMiLCJpYXQiOjE3OTE2NjY0NjgsImV4cCI6MTc5MTY5NTI2OH0.x7QgGvTL1V5suRd_3Ef0KCjcaNjsV1r4avbPEUR0JeY
+Content-Type: application/json
+
+### 6. Cancelar un turno (Dispara Evento de Standby)
+PATCH {{baseUrl}}/admission/appointments/123e4567-e89b-12d3-a456-426614174000/cancel
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTE2Nzk1MjIsImV4cCI6MTc5MTcwODMyMn0.xdR6uKXRsZE4_cj5u3_JhmUJcVfZUEYitT2IeKsHCHA
+
+### 7. Reservar el turno recién creado
+POST {{baseUrl}}/admission/appointments/book
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTE2ODYwOTQsImV4cCI6MTc5MTcxNDg5NH0.CWawkjgtZb28t1f8b9So7d16fedkGFid4gK9V1Gyl8I
+
+{
+    "appointmentId": "222e4567-e89b-12d3-a456-426614174222",
+    "patientId": "paciente-arrepentido"
+}
+
+### 8. Cancelar el turno (Dispara Evento de Standby)
+PATCH {{baseUrl}}/admission/appointments/222e4567-e89b-12d3-a456-426614174222/cancel
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTE2ODYwOTQsImV4cCI6MTc5MTcxNDg5NH0.CWawkjgtZb28t1f8b9So7d16fedkGFid4gK9V1Gyl8I
