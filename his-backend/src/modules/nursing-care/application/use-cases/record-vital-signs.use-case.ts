@@ -13,7 +13,7 @@ export interface RecordVitalSignsCommand {
 @Injectable()
 export class RecordVitalSignsUseCase {
   constructor(
-    @Inject(IVitalSignsRepository) // <-- ¡Esta es la línea mágica que faltaba!
+    @Inject(IVitalSignsRepository)
     private readonly vitalSignsRepository: IVitalSignsRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -29,10 +29,20 @@ export class RecordVitalSignsUseCase {
       command.heartRate
     );
 
-    // Guardamos a través del Puerto
+    // Guardamos a través del Puerto en la BD de Enfermería
     await this.vitalSignsRepository.save(vitalSigns);
 
-    // Evaluamos las Reglas de Negocio de la HU 1.1
+    // 👇 AGREGAMOS ESTE EVENTO PARA EL MÓDULO EHR 👇
+    // Disparamos el evento para que la historia clínica lo atrape y anote
+    this.eventEmitter.emit('vital-signs.registered', {
+      patientId: vitalSigns.patientId,
+      temperature: vitalSigns.temperature,
+      bloodPressure: vitalSigns.bloodPressure,
+      heartRate: vitalSigns.heartRate,
+    });
+    // ------------------------------------------------
+
+    // Evaluamos las Reglas de Negocio de la HU 1.1 (Lo dejamos tal cual lo tenías)
     if (vitalSigns.hasHighFever()) {
       this.eventEmitter.emit('alert.high_fever', {
         patientId: vitalSigns.patientId,
