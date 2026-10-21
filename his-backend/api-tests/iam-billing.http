@@ -5,32 +5,10 @@ POST {{baseUrl}}/iam/register
 Content-Type: application/json
 
 {
-    "fullName": "Martín Torres",
-    "email": "martin.torres@hospital.com",
-    "passwordPlain": "enfermeria123",
-    "role": "NURSE"
-}
-
-### 1.1 Registrar al Doctor Diego Gonzales
-POST {{baseUrl}}/iam/register
-Content-Type: application/json
-
-{
-    "fullName": "Diego Gonzales",
-    "email": "gonzalesdiego@hospital.com",
-    "passwordPlain": "doctor123",
-    "role": "DOCTOR"
-}
-
-### 1.2 Registrar al Limpiador Agustin Gualdieri
-POST {{baseUrl}}/iam/register
-Content-Type: application/json
-
-{
-    "fullName": "Agustin Gualdieri",
-    "email": "gualdieriagustin@hospital.com",
-    "passwordPlain": "limpiador123",
-    "role": "CLEANER"
+  "fullName": "Martín Torres",
+  "email": "martin.torres@hospital.com",
+  "passwordPlain": "enfermeria123",
+  "role": "NURSE"
 }
 
 ### 2. Registrar un Recepcionista (Para Admisión)
@@ -38,10 +16,10 @@ POST {{baseUrl}}/iam/register
 Content-Type: application/json
 
 {
-    "fullName": "Recepcionista Guardia",
-    "email": "recepcion@hospital.com",
-    "passwordPlain": "recepcion123",
-    "role": "NURSE"
+  "fullName": "Recepcionista Guardia",
+  "email": "recepcion@hospital.com",
+  "passwordPlain": "recepcion123",
+  "role": "RECEPTIONIST"
 }
 
 ### 3. Hacer Login y obtener el JWT
@@ -50,36 +28,68 @@ POST {{baseUrl}}/iam/login
 Content-Type: application/json
 
 {
-    "email": "martin.torres@hospital.com",
-    "passwordPlain": "enfermeria123"
+  "email": "martin.torres@hospital.com",
+  "passwordPlain": "enfermeria123"
+}
+### ---pruebas billing module---
+
+### ==========================================
+### MÓDULO 1: IAM (IDENTIDAD Y ACCESOS)
+### ==========================================
+
+### 1. Registrar un Administrador
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+  "fullName": "Director Administrador",
+  "email": "admin@hospital.com",
+  "passwordPlain": "admin123",
+  "role": "ADMIN"
 }
 
-### 3.1 Hacer Login y obtener el JWT del Doctor
-# @name loginDoctor
+### 2. Hacer Login y guardar el Token en una variable temporal
+# @name loginAdmin
 POST {{baseUrl}}/iam/login
 Content-Type: application/json
 
 {
-    "email": "gonzalesdiego@hospital.com",
-    "passwordPlain": "doctor123"
+  "email": "admin@hospital.com",
+  "passwordPlain": "admin123"
 }
 
-### 3.2 Hacer Login y obtener el JWT del Cleaner
-# @name loginDoctor
-POST {{baseUrl}}/iam/login
+### ==========================================
+### MÓDULO 6: FACTURACIÓN Y FINANZAS
+### ==========================================
+
+### 3. Cargar precio de un insumo en BD (Requiere token de ADMIN)
+POST {{baseUrl}}/billing/prices
 Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.accessToken}}
 
 {
-    "email": "gualdieriagustin@hospital.com",
-    "passwordPlain": "limpiador123"
+  "itemName": "Ibuprofeno 400mg",
+  "unitPrice": 500
 }
 
-###
-# @name loginReceptionist
-POST {{baseUrl}}/iam/login
+### 4. Prueba 1: Cobertura Pública (0 pesos para paciente, 15000 al Estado)
+POST {{baseUrl}}/billing/calculate
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MWNjMWViMy00NmU5LTRjYzgtYmZkMi04Nzg4Mzk3OGU2ZGYiLCJlbWFpbCI6ImFkbWluQGhvc3BpdGFsLmNvbSIsInJvbGUiOiJBRE1JTiIsImZ1bGxOYW1lIjoiRGlyZWN0b3IgQWRtaW5pc3RyYWRvciIsImlhdCI6MTc5MTc1MTQyNSwiZXhwIjoxNzkxNzgwMjI1fQ.xEq4XyFcPYOJrRBf8ukRhWCQVLSs6AcjQXh2b85iYK8
 
 {
-    "email": "recepcion@hospital.com",
-    "passwordPlain": "recepcion123"
+  "patientId": "juan-gomez",
+  "coverageType": "PUBLIC",
+  "consultationBaseCost": 15000
+}
+
+### 5. Prueba 2: Prepaga (3000 al paciente, 12000 a la prepaga)
+POST {{baseUrl}}/billing/calculate
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MWNjMWViMy00NmU5LTRjYzgtYmZkMi04Nzg4Mzk3OGU2ZGYiLCJlbWFpbCI6ImFkbWluQGhvc3BpdGFsLmNvbSIsInJvbGUiOiJBRE1JTiIsImZ1bGxOYW1lIjoiRGlyZWN0b3IgQWRtaW5pc3RyYWRvciIsImlhdCI6MTc5MTc1MTQyNSwiZXhwIjoxNzkxNzgwMjI1fQ.xEq4XyFcPYOJrRBf8ukRhWCQVLSs6AcjQXh2b85iYK8
+
+{
+  "patientId": "ana-rojas",
+  "coverageType": "PREPAID",
+  "consultationBaseCost": 15000
 }

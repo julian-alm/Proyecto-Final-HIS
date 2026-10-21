@@ -7,6 +7,7 @@ import { NursingCareModule } from './modules/nursing-care/nursing-care.module';
 import { EhrModule } from './modules/ehr/ehr.module';
 import { IamModule } from './modules/iam/iam.module';
 import { BedManagementModule } from './modules/bed-management/bed-management.module';
+import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { BedManagementModule } from './modules/bed-management/bed-management.mod
     EhrModule,
     NursingCareModule,
     BedManagementModule,
+    BillingModule,
     ],
 })
 export class AppModule {}
