@@ -1,0 +1,143 @@
+### Prueba 1: Generar Protocolo Pre-Quirúrgico (Patrón Builder)
+POST http://localhost:3000/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "admissionReason": "PRE_OP"
+}
+
+### Prueba 2: Registrar Signos Vitales en Base de Datos Real
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "temperature": 38.5,
+  "bloodPressure": "120/80",
+  "heartRate": 85
+}
+
+### Prueba 3: Registrar Signos Vitales con FIEBRE ALTA (Escenario 2)
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "temperature": 40.5,
+  "bloodPressure": "130/85",
+  "heartRate": 110
+}
+### Prueba 4: Administrar Medicación (HU 1.2) - En término
+POST http://localhost:3000/nursing-care/medication/administer
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "nurseId": "enfermero-Torres",
+  "medicationName": "Ibuprofeno",
+  "dose": "400mg",
+  "scheduledTime": "2026-10-15T14:00:00Z",
+  "administeredTime": "2026-10-15T14:15:00Z"
+}
+
+### Prueba 5: Administrar Medicación (HU 1.2) - Fuera de término
+POST http://localhost:3000/nursing-care/medication/administer
+Content-Type: application/json
+
+{
+  "patientId": "paciente-123",
+  "nurseId": "enfermero-Torres",
+  "medicationName": "Ibuprofeno",
+  "dose": "400mg",
+  "scheduledTime": "2026-10-15T14:00:00Z",
+  "administeredTime": "2026-10-15T14:45:00Z"
+}
+
+### Prueba 6: Generar Protocolo Pre-Quirúrgico (HU 2.1)
+POST http://localhost:3000/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+  "patientId": "paciente-789",
+  "admissionReason": "Paciente preparado para CIRUGIA general"
+}
+
+### Prueba 7: Generar Protocolo Infección Respiratoria (HU 2.1)
+POST http://localhost:3000/nursing-care/protocols/generate
+Content-Type: application/json
+
+{
+  "patientId": "paciente-789",
+  "admissionReason": "Ingresa por cuadro de NEUMONIA atípica"
+}
+
+### Prueba 8: Consultar Historial de Signos Vitales
+GET http://localhost:3000/nursing-care/vital-signs/paciente-123
+
+### Prueba 9: Registrar Signos Vitales (Rol Correcto - NURSE)
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NWJhY2EwNy1kOGE4LTRiZTMtYjFiZC03OWZkNDljZGI3YTMiLCJlbWFpbCI6Im1hcnRpbi50b3JyZXNAaG9zcGl0YWwuY29tIiwicm9sZSI6Ik5VUlNFIiwiZnVsbE5hbWUiOiJNYXJ0w61uIFRvcnJlcyIsImlhdCI6MTc5MjU2NDU2NywiZXhwIjoxNzkyNTkzMzY3fQ.L9UFOrqFV436ZZZcL9uRCADWdBjbOBrEytws-C7Jcvw
+
+{
+  "patientId": "550e8400-e29b-41d4-a716-446655440000",
+  "temperature": 36.5,
+  "bloodPressure": "120/80",
+  "heartRate": 75
+}
+
+### Prueba 10: Registrar Signos Vitales (Rol Incorrecto - CLEANER)
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MzhkZTBjOC1hMTNkLTRjMjktYTU3MC03MTU2MWZhZWM2MDIiLCJlbWFpbCI6Imd1YWxkaWVyaWFndXN0aW5AaG9zcGl0YWwuY29tIiwicm9sZSI6IkNMRUFORVIiLCJmdWxsTmFtZSI6IkFndXN0aW4gR3VhbGRpZXJpIiwiaWF0IjoxNzkyNTY0NjEyLCJleHAiOjE3OTI1OTM0MTJ9.zM1pqpmvGi-O65MPeXmUcgK-mFTBLCbTqdkloNlqf-E
+
+{
+  "patientId": "550e8400-e29b-41d4-a716-446655440000",
+  "temperature": 36.5,
+  "bloodPressure": "120/80",
+  "heartRate": 75
+}
+
+
+
+
+
+### Prueba A: Crear legajo vacío (Con UUID válido)
+POST http://localhost:3000/ehr/550e8400-e29b-41d4-a716-446655440000
+
+### Prueba B: Agregar evolución médica
+POST http://localhost:3000/ehr/550e8400-e29b-41d4-a716-446655440000/progress-notes
+Content-Type: application/json
+
+{
+  "doctorId": "medico-1",
+  "note": "Probando el flujo básico de EHR."
+}
+### Prueba C: Registrar Signos Vitales (Desde Enfermería hacia EHR)
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+  "patientId": "550e8400-e29b-41d4-a716-446655440000",
+  "temperature": 37.5,
+  "bloodPressure": "120/80",
+  "heartRate": 80
+}
+
+### Prueba D: Registrar Signos Vitales con Fiebre Alta (Alerta)
+POST http://localhost:3000/nursing-care/vital-signs
+Content-Type: application/json
+
+{
+  "patientId": "550e8400-e29b-41d4-a716-446655440000",
+  "temperature": 40.5,
+  "bloodPressure": "130/85",
+  "heartRate": 110
+}
+### Prueba E: Consultar la Historia Clínica Completa
+GET http://localhost:3000/ehr/550e8400-e29b-41d4-a716-446655440000
+
+### Prueba F: Consultar la Historia Clínica Completa
+GET http://localhost:3000/ehr/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MzhkZTBjOC1hMTNkLTRjMjktYTU3MC03MTU2MWZhZWM2MDIiLCJlbWFpbCI6Imd1YWxkaWVyaWFndXN0aW5AaG9zcGl0YWwuY29tIiwicm9sZSI6IkNMRUFORVIiLCJmdWxsTmFtZSI6IkFndXN0aW4gR3VhbGRpZXJpIiwiaWF0IjoxNzkyNTYyNzMyLCJleHAiOjE3OTI1OTE1MzJ9.3ez9gNmj3qJTUo0wzzYpunHXDjn5HUhlxrL_TjRlMu4
