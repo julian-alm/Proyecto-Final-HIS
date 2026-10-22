@@ -8,27 +8,29 @@ import { EhrModule } from './modules/ehr/ehr.module';
 import { IamModule } from './modules/iam/iam.module';
 import { BedManagementModule } from './modules/bed-management/bed-management.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { InventoryModule } from './modules/inventory/inventory.module'
 
 @Module({
     imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    EventEmitterModule.forRoot(),
-     TypeOrmModule.forRoot({
-         type: 'postgres',
-         host: process.env.DB_HOST || 'localhost',
-         port: Number(process.env.DB_PORT) || 5432,
-         username: process.env.DB_USERNAME || 'postgres',
-         password: process.env.DB_PASSWORD || 'postgres',
-        database: process.env.DB_DATABASE || 'his_db',
-        autoLoadEntities: true, // Carga las tablas de infrastructure/persistence automáticamente
-        synchronize: true, // En desarrollo crea/actualiza las tablas solas al guardar
-     }),
-    IamModule,
-    AdmissionModule,
-    EhrModule,
-    NursingCareModule,
-    BedManagementModule,
-    BillingModule,
+        ConfigModule.forRoot({ isGlobal: true }),
+        EventEmitterModule.forRoot(),
+        TypeOrmModule.forRoot({
+            type: 'postgres',
+            host: process.env.DB_HOST || 'localhost',
+            port: Number(process.env.DB_PORT) || 5432,
+            username: process.env.DB_USERNAME || 'postgres',
+            password: process.env.DB_PASSWORD || 'postgres',
+            database: process.env.DB_DATABASE || 'his_db',
+            autoLoadEntities: true, // Carga las tablas de infrastructure/persistence automáticamente
+            synchronize: true, // En desarrollo crea/actualiza las tablas solas al guardar
+        }),
+        IamModule,
+        AdmissionModule,
+        EhrModule,
+        NursingCareModule,
+        BedManagementModule,
+        BillingModule,
+        InventoryModule,
     ],
 })
 export class AppModule {}
