@@ -8,11 +8,13 @@ import { MedicationAdministeredListener } from './application/listeners/medicati
 // IMPORTANTE: Importamos el módulo entero de IAM
 import { IamModule } from '../iam/iam.module'; 
 import { PriceListOrmEntity } from './infrastructure/persistance/price-list.orm-entity';
+import { EhrModule } from '../ehr/ehr.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ChargeOrmEntity, PriceListOrmEntity]), // 1. Conectamos la tabla de base de datos
-    IamModule // 2. Importamos IAM para que el controlador pueda usar @UseGuards(RolesGuard)
+    IamModule, // 2. Importamos IAM para que el controlador pueda usar @UseGuards(RolesGuard)
+    EhrModule
   ],
   controllers: [BillingController],
   providers: [

@@ -1,3 +1,5 @@
+@baseUrl = http://localhost:3000
+
 ### Prueba 1: Generar Protocolo Pre-Quirúrgico (Patrón Builder)
 POST http://localhost:3000/nursing-care/protocols/generate
 Content-Type: application/json
@@ -141,3 +143,15 @@ GET http://localhost:3000/ehr/550e8400-e29b-41d4-a716-446655440000
 ### Prueba F: Consultar la Historia Clínica Completa
 GET http://localhost:3000/ehr/550e8400-e29b-41d4-a716-446655440000
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MzhkZTBjOC1hMTNkLTRjMjktYTU3MC03MTU2MWZhZWM2MDIiLCJlbWFpbCI6Imd1YWxkaWVyaWFndXN0aW5AaG9zcGl0YWwuY29tIiwicm9sZSI6IkNMRUFORVIiLCJmdWxsTmFtZSI6IkFndXN0aW4gR3VhbGRpZXJpIiwiaWF0IjoxNzkyNTYyNzMyLCJleHAiOjE3OTI1OTE1MzJ9.3ez9gNmj3qJTUo0wzzYpunHXDjn5HUhlxrL_TjRlMu4
+
+### Prueba G: Registrar Paciente
+POST {{baseUrl}}/ehr/patients
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNWU4YzYzOC03MzY2LTQyNGEtOWNhYi1iY2FiODgzMmI2NmEiLCJlbWFpbCI6ImFkbWluQGhvc3BpdGFsLmNvbSIsInJvbGUiOiJBRE1JTiIsImZ1bGxOYW1lIjoiRGlyZWN0b3IgQWRtaW5pc3RyYWRvciIsImlhdCI6MTc5MjY5MTk2OSwiZXhwIjoxNzkyNzIwNzY5fQ.LitTLKn24haK9diSXtBH2dHeddJ1o2UBW4Iv0RTTOQw
+
+{
+  "dni": "45925054",
+  "firstName": "Michael",
+  "lastName": "Kaiser",
+  "coverageType": "PREPAID"
+}
