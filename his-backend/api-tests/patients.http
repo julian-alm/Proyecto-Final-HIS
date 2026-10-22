@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTI2ODk2NTksImV4cCI6MTc5MjcxODQ1OX0.foJBPA-NJayhjnAIh-10phV5Rq9jBcPTx6a93KD6T7c
+
+### Registrar paciente Ana Rojas (Medicina Prepaga)
+POST {{baseUrl}}/ehr/patients
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "dni": "35123456",
+    "firstName": "Ana",
+    "lastName": "Rojas",
+    "coverageType": "PREPAID"
+}

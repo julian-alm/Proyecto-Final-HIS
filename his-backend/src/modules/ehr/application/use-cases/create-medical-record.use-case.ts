@@ -9,12 +9,19 @@ export class CreateMedicalRecordUseCase {
     private readonly medicalRecordRepository: IMedicalRecordRepository,
   ) {}
 
-  async execute(patientId: string): Promise<MedicalRecord> {
+  // Hacemos que acepte un string o un objeto por seguridad defensiva
+  async execute(input: string | { patientId: string }): Promise<MedicalRecord> {
+    const patientId = typeof input === 'string' ? input : input?.patientId;
+
+    if (!patientId) {
+      throw new Error('El patientId es obligatorio para crear la historia clínica.');
+    }
+
     // 1. Verificamos si este paciente ya tiene una historia clínica
     const existingRecord = await this.medicalRecordRepository.findByPatientId(patientId);
     
     if (existingRecord) {
-      // Si ya tiene, no creamos una nueva, devolvemos un error (o podríamos simplemente devolver la existente)
+      // Si ya tiene, devolvemos la existente o lanzamos el error controlado
       throw new Error(`El paciente ${patientId} ya tiene una historia clínica activa.`);
     }
 

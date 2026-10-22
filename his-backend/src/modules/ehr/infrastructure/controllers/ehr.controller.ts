@@ -2,8 +2,19 @@ import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/
 import { CreateMedicalRecordUseCase } from '../../application/use-cases/create-medical-record.use-case';
 import { AddProgressNoteUseCase } from '../../application/use-cases/add-progress-note.use-case';
 import { GetMedicalRecordUseCase } from '../../application/use-cases/get-medical-record.use-case';
+import { RegisterPatientUseCase } from '../../application/use-cases/register-patient.use-case';
+import { RegisterPatientCommand } from '../../application/use-cases/register-patient.use-case';
+import { CoverageType } from '../../domain/entities/coverage-type.enum';
 import { RolesGuard, Roles } from '../../../iam/infrastructure/guards/roles.guard';
 import { UserRole } from '../../../iam/domain/entities/user-role.enum';
+import { IsString, IsNotEmpty } from 'class-validator';
+
+export class RegisterPatientDto {
+  @IsString() @IsNotEmpty() dni: string;
+  @IsString() @IsNotEmpty() firstName: string;
+  @IsString() @IsNotEmpty() lastName: string;
+  @IsString() @IsNotEmpty() coverageType: string;
+}
 
 @Controller('ehr')
 @UseGuards(RolesGuard) // Activamos la seguridad con JWT
@@ -12,7 +23,17 @@ export class EhrController {
     private readonly createMedicalRecordUseCase: CreateMedicalRecordUseCase,
     private readonly addProgressNoteUseCase: AddProgressNoteUseCase,
     private readonly getMedicalRecordUseCase: GetMedicalRecordUseCase, // <-- Lo inyectamos acá
+    private readonly registerPatientUseCase: RegisterPatientUseCase,
   ) {}
+
+  @Post('patients')
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST) // El recepcionista registra pacientes
+  async registerPatient(@Body() body: RegisterPatientDto) {
+    const patientId = await this.registerPatientUseCase.execute(
+      new RegisterPatientCommand(body.dni, body.firstName, body.lastName, body.coverageType as CoverageType)
+    );
+    return { message: 'Paciente registrado exitosamente', patientId };
+  }
 
   // 1. Ruta para CREAR el legajo vacío
   // POST /ehr/:patientId
