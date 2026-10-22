@@ -43,4 +43,4 @@ export class MedicationAdministeredListener {
     await this.chargeRepo.save(charge);
     this.logger.log(`Cargo generado exitosamente y vinculado al evento ${event.eventId}`);
   }
-}
+} 

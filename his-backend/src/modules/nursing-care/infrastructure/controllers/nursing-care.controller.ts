@@ -9,7 +9,7 @@ import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 @Controller('nursing-care')
 @UseGuards(RolesGuard)
 export class NursingCareController {
- constructor(
+constructor(
     private readonly recordVitalSignsUseCase: RecordVitalSignsUseCase,
     private readonly generateCareProtocolUseCase: GenerateCareProtocolUseCase,
     private readonly administerMedicationUseCase: AdministerMedicationUseCase,// <-- Agregá esta línea acá

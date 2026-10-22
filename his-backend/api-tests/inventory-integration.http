@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTliMDljOC05YWY3LTQ1MTEtYjMwMi02M2JlZWZmMzNkZGUiLCJlbWFpbCI6Im1hcnRpbi50b3JyZXNAaG9zcGl0YWwuY29tIiwicm9sZSI6Ik5VUlNFIiwiZnVsbE5hbWUiOiJNYXJ0w61uIFRvcnJlcyIsImlhdCI6MTc5MjYwODkzMSwiZXhwIjoxNzkyNjM3NzMxfQ.0mniJ646qYiRAFoJ7rBKnZ9UznoTwBzaCdEvxzyvDVM
+
+### 1. Cargar stock inicial de 50 unidades de "Ibuprofeno 400mg" (Dado que el inventario tiene 50 unidades)
+POST {{baseUrl}}/inventory/supplies
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Ibuprofeno 400mg",
+    "stock": 50
+}
+
+### 2. Enfermería administra 1 dosis de "Ibuprofeno 400mg" (Dispara el evento hacia Inventario y Facturación)
+# Nota: Verifica en nursing-care.controller.ts la ruta exacta que puso el Integrante 2 (ej: /nursing-care/medication/administer)
+POST {{baseUrl}}/nursing-care/medication/administer
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "patientId": "paciente-ana-rojas",
+    "nurseId": "enfermero-martin-torres",
+    "medicationName": "Ibuprofeno 400mg",
+    "dose": "400mg",
+    "scheduledTime": "2026-10-21T14:00:00.000Z",
+    "administeredTime": "2026-10-21T14:05:00.000Z"
+}
+
+### 3. Consultar el stock en Inventario (Debe devolver 49 unidades de manera atómica)
+GET {{baseUrl}}/inventory/supplies/Ibuprofeno%20400mg
+Authorization: Bearer {{token}}
