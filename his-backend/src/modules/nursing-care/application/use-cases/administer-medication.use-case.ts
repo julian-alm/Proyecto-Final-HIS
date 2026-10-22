@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MedicationAdministration } from '../../domain/entities/medication-administration.entity';
 import { IMedicationAdministrationRepository } from '../../domain/ports/medication-administration.repository.port';
-
+import { MedicationAdministeredEvent } from '../../../../shared/domain/events/medication-administered.event';
 import { IsString, IsNotEmpty } from 'class-validator';
 
 export class AdministerMedicationCommand {
@@ -56,14 +56,15 @@ export class AdministerMedicationUseCase {
     // 2. Persistimos a través del Puerto
     await this.repository.save(administration);
 
-    // 3. Regla de Negocio: Descontar insumo del inventario (HU 1.2)
-    this.eventEmitter.emit('inventory.medication.consumed', {
-      medicationName: administration.medicationName,
-      dose: administration.dose,
-      nurseId: administration.nurseId,
-      timestamp: administration.administeredTime,
-      status: administration.status,
-    });
+    // 3. Regla de Negocio: Emitimos el evento oficial con el patientId incluido para Inventario y Facturación
+    const event = new MedicationAdministeredEvent(
+      administration.patientId,
+      administration.medicationName,
+      1, // Cantidad de unidades administradas
+      administration.administeredTime
+    );
+
+    this.eventEmitter.emit('medication.administered', event);
 
     return administration;
   }
