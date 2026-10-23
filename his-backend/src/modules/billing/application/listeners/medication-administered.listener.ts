@@ -20,7 +20,7 @@ export class MedicationAdministeredListener {
     private readonly chargeRepo: Repository<ChargeOrmEntity>,
     @InjectRepository(PriceListOrmEntity)
     private readonly priceListRepo: Repository<PriceListOrmEntity>,
-    // 2. Inyectamos el repositorio de pacientes y la fábrica de estrategias
+    // 2. Inyectamos el repositorio de pacientes
     @Inject(IPatientRepository)
     private readonly patientRepository: IPatientRepository,
   ) {}
@@ -43,31 +43,25 @@ export class MedicationAdministeredListener {
     try {
       patient = await this.patientRepository.findById(event.patientId);
     } catch {
-      // Si envían un ID de prueba que no es UUID válido (ej. "paciente-ana-rojas"), usamos el fallback sin romper PostgreSQL
+      // Fallback seguro si usan un ID de prueba
       this.logger.warn(
-        `El patientId "${event.patientId}" no es un UUID registrado. Usando cobertura PARTICULAR por defecto.`,
+        `El patientId "${event.patientId}" no es un UUID registrado. Usando cobertura PRIVATE por defecto.`,
       );
     }
 
-    const coverageType = patient ? patient.coverageType : 'PARTICULAR';
+    const coverageType = patient ? patient.coverageType : 'PRIVATE';
 
-    // 3. Obtener y ejecutar el Patrón Strategy según la cobertura del paciente
+    // 3. Obtener la estrategia de la Factory y ejecutar calculateCharges
     const strategy = BillingStrategyFactory.getStrategy(coverageType as any);
-    const calculation: any = (
-      strategy as unknown as { calculate: (amount: number) => any }
-    ).calculate(totalCost);
+    const calculation = strategy.calculateCharges(totalCost);
 
-    // Soportamos los nombres de propiedades que haya definido el Integrante 3 en el retorno de su Strategy
+    // Soportamos los nombres de propiedades que definió el Integrante 3
     const patientAmount =
       calculation.patientAmount ??
-      calculation.patientCost ??
-      calculation.copay ??
       totalCost;
 
     const thirdPartyAmount =
       calculation.thirdPartyAmount ??
-      calculation.thirdPartyCost ??
-      calculation.coveredAmount ??
       totalCost - patientAmount;
 
     // 4. Generar el cargo automático con el desglose calculado por la estrategia

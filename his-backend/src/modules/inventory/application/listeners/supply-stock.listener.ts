@@ -7,9 +7,8 @@ import { DeductSupplyStockUseCase, DeductSupplyStockCommand } from '../use-cases
 export class SupplyStockListener {
     constructor(private readonly deductSupplyStockUseCase: DeductSupplyStockUseCase) {}
 
-    //@OnEvent('medication.administered')
-    //@OnEvent('MedicacionAdministrada')
-    @OnEvent('inventory.medication.consumed')
+    // 1. EL CAMBIO CLAVE: Escuchar el evento exacto que dispara enfermería
+    @OnEvent('medication.administered', { async: true })
     async handleMedicationAdministered(event: MedicationAdministeredEvent) {
         console.log(`\n[INVENTARIO - HU 3.1] Evento recibido:`, event);
         
@@ -21,8 +20,10 @@ export class SupplyStockListener {
             const updated = await this.deductSupplyStockUseCase.execute(
                 new DeductSupplyStockCommand(supplyName, quantity),
             );
+            
+            // 2. CORRECCIÓN: Mostrar updated.stock en lugar de updated.description
             console.log(
-                `-> [STOCK DESCONTADO]: De 50 a ${updated.stock} unidades de "${updated.name}".\n`,
+                `-> [STOCK DESCONTADO]: Quedan ${updated.stock} unidades de "${updated.name}".\n`,
             );
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);

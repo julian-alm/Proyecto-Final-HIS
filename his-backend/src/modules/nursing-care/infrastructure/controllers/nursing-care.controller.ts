@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseGuards, Req } from '@nestjs/common';
 import { AdministerMedicationUseCase, AdministerMedicationCommand } from '../../application/use-cases/administer-medication.use-case';
 import { RecordVitalSignsUseCase, RecordVitalSignsCommand } from '../../application/use-cases/record-vital-signs.use-case';
 import { GenerateCareProtocolUseCase, GenerateProtocolCommand } from '../../application/use-cases/generate-care-protocol.use-case';
@@ -9,25 +9,23 @@ import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 @Controller('nursing-care')
 @UseGuards(RolesGuard)
 export class NursingCareController {
-constructor(
+  constructor(
     private readonly recordVitalSignsUseCase: RecordVitalSignsUseCase,
     private readonly generateCareProtocolUseCase: GenerateCareProtocolUseCase,
-    private readonly administerMedicationUseCase: AdministerMedicationUseCase,// <-- Agregá esta línea acá
+    private readonly administerMedicationUseCase: AdministerMedicationUseCase,
     private readonly getVitalSignsHistoryUseCase: GetVitalSignsHistoryUseCase,
   ) {}
 
   @Post('vital-signs')
   @Roles(UserRole.NURSE, UserRole.DOCTOR, UserRole.ADMIN)
   async recordVitalSigns(
-    // 1. Agregamos el heartRate al tipo del body
     @Body() body: { patientId: string; temperature: number; bloodPressure: string; heartRate: number }
   ) {
-    // 2. Armamos el objeto sin la palabra "new" porque es una interfaz
     const command: RecordVitalSignsCommand = {
       patientId: body.patientId,
       temperature: body.temperature,
       bloodPressure: body.bloodPressure,
-      heartRate: body.heartRate, // Lo mapeamos acá
+      heartRate: body.heartRate,
     };
 
     const result = await this.recordVitalSignsUseCase.execute(command);
@@ -37,7 +35,6 @@ constructor(
   @Post('protocols/generate')
   @Roles(UserRole.NURSE, UserRole.DOCTOR, UserRole.ADMIN)
   async generateProtocol(@Body() body: { patientId: string; admissionReason: string }) {
-    // También arreglamos este por las dudas para que no tire error
     const command: GenerateProtocolCommand = {
       patientId: body.patientId,
       admissionReason: body.admissionReason,
@@ -46,10 +43,23 @@ constructor(
     const protocol = await this.generateCareProtocolUseCase.execute(command);
     return { message: 'Protocolo generado exitosamente', data: protocol };
   }
+
   @Post('medication/administer')
   @Roles(UserRole.NURSE, UserRole.ADMIN)
-  async administerMedication(@Body() body: AdministerMedicationCommand) {
-    const result = await this.administerMedicationUseCase.execute(body);
+  async administerMedication(
+    @Req() req: any, // Inyectamos la request
+    @Body() body: AdministerMedicationCommand
+  ) {
+    // 1. Extraemos el ID del usuario del token JWT (suele venir como id o sub según cómo armaron el payload)
+    const authenticatedNurseId = req.user.id || req.user.sub;
+
+    // 2. Sobrescribimos el nurseId que pueda venir en el body con el real y seguro
+    const secureCommand: AdministerMedicationCommand = {
+      ...body,
+      nurseId: authenticatedNurseId,
+    };
+
+    const result = await this.administerMedicationUseCase.execute(secureCommand);
     return { message: 'Administración de medicación registrada con éxito', data: result };
   }
 
@@ -63,6 +73,3 @@ constructor(
     };
   }
 }
-
-
-
