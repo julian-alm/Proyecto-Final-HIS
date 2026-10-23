@@ -19,6 +19,18 @@ export class TypeOrmPatientRepository implements IPatientRepository {
         return new Patient(orm.id, orm.dni, orm.firstName, orm.lastName, orm.coverageType as CoverageType);
     }
 
+    async findByDni(dni: string): Promise<Patient | null> {
+        const orm = await this.ormRepository.findOne({ where: { dni: dni.trim() } });
+        if (!orm) return null;
+        return new Patient(
+            orm.id,
+            orm.dni,
+            orm.firstName,
+            orm.lastName,
+            orm.coverageType as CoverageType,
+        );
+    }
+
     async save(patient: Patient): Promise<void> {
         await this.ormRepository.save({
             id: patient.id,

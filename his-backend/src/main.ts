@@ -12,6 +12,8 @@ async function bootstrap() {
   // Traduce automáticamente cualquier DomainException a HTTP 400
   app.useGlobalFilters(new DomainExceptionFilter());
 
+  app.enableCors();
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

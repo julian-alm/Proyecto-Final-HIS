@@ -36,14 +36,14 @@ export class BillingController {
   ) {}
 
   @Post('calculate')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
   calculate(@Body() dto: GenerateBillDto) {
     return this.calculateCostUseCase.execute(dto);
   }
 
   // 2. Nuevo endpoint protegido y validado
   @Post('prices')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
   async addPrice(@Body() dto: CreatePriceDto) {
     const priceItem = this.priceRepo.create(dto);
     await this.priceRepo.save(priceItem);

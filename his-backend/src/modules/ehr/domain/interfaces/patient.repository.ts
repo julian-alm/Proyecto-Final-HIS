@@ -4,5 +4,6 @@ export const IPatientRepository = Symbol('IPatientRepository');
 
 export interface IPatientRepository {
     findById(id: string): Promise<Patient | null>;
+    findByDni(dni: string): Promise<Patient | null>;
     save(patient: Patient): Promise<void>;
 }
