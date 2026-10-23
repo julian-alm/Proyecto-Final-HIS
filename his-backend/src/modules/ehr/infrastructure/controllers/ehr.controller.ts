@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Request, Inject, NotFoundException } from '@nestjs/common';
 import { CreateMedicalRecordUseCase } from '../../application/use-cases/create-medical-record.use-case';
 import { AddProgressNoteUseCase } from '../../application/use-cases/add-progress-note.use-case';
 import { GetMedicalRecordUseCase } from '../../application/use-cases/get-medical-record.use-case';
@@ -8,6 +8,7 @@ import { CoverageType } from '../../domain/entities/coverage-type.enum';
 import { RolesGuard, Roles } from '../../../iam/infrastructure/guards/roles.guard';
 import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 import { IsString, IsNotEmpty } from 'class-validator';
+import { IPatientRepository } from '../../domain/interfaces/patient.repository';
 
 export class RegisterPatientDto {
   @IsString() @IsNotEmpty() dni: string;
@@ -24,6 +25,8 @@ export class EhrController {
     private readonly addProgressNoteUseCase: AddProgressNoteUseCase,
     private readonly getMedicalRecordUseCase: GetMedicalRecordUseCase, // <-- Lo inyectamos acá
     private readonly registerPatientUseCase: RegisterPatientUseCase,
+    @Inject(IPatientRepository)
+    private readonly patientRepository: IPatientRepository,
   ) {}
 
   @Post('patients')
@@ -35,6 +38,17 @@ export class EhrController {
     return { message: 'Paciente registrado exitosamente', patientId };
   }
 
+  // GET /ehr/patients/dni/:dni
+  @Get('patients/dni/:dni')
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.DOCTOR, UserRole.NURSE)
+  async getPatientByDni(@Param('dni') dni: string) {
+    const patient = await this.patientRepository.findByDni(dni);
+    if (!patient) {
+      throw new NotFoundException(`No se encontró ningún paciente con DNI ${dni}`);
+    }
+    return patient;
+  }
+  
   // 1. Ruta para CREAR el legajo vacío
   // POST /ehr/:patientId
   @Post(':patientId')
