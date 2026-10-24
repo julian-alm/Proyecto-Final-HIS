@@ -131,23 +131,74 @@
             {{ loadingPrice ? 'Guardando...' : 'Guardar en Lista de Precios' }}
           </button>
         </form>
-
-        <div v-if="recentPrices.length > 0" class="recent-list">
-          <h3>Precios actualizados recientemente</h3>
-          <ul>
-            <li v-for="(item, index) in recentPrices" :key="`${item.itemName}-${index}`">
-              <span>{{ item.itemName }}</span>
-              <strong>${{ item.unitPrice }}</strong>
-            </li>
-          </ul>
-        </div>
       </section>
+    </div>
+
+    <!-- TABLAS DE DATOS EN VIVO -->
+    <div class="tables-section">
+      <div v-if="loadingData" class="loading-state">Cargando datos del servidor...</div>
+      
+      <div v-else class="tables-grid">
+        <!-- Tabla de Cargos -->
+        <div class="table-card">
+          <h3>Últimos Cargos Generados</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th>ID Paciente</th>
+                  <th>Abona Paciente</th>
+                  <th>Cubre OS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="charge in chargesList" :key="charge.id">
+                  <td>{{ new Date(charge.createdAt).toLocaleDateString() }}</td>
+                  <td>{{ charge.concept }}</td>
+                  <td class="text-small" :title="charge.patientId">{{ charge.patientId.substring(0,8) }}...</td>
+                  <td class="amount patient-amount">${{ charge.patientAmount }}</td>
+                  <td class="amount third-party">${{ charge.thirdPartyAmount }}</td>
+                </tr>
+                <tr v-if="chargesList.length === 0">
+                  <td colspan="5" class="text-center">No hay cargos registrados en el sistema.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabla de Precios -->
+        <div class="table-card">
+          <h3>Lista de Precios Vigente</h3>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Insumo / Concepto</th>
+                  <th>Precio Unitario</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in pricesList" :key="item.id || item.itemName">
+                  <td>{{ item.itemName }}</td>
+                  <td class="amount">${{ item.unitPrice }}</td>
+                </tr>
+                <tr v-if="pricesList.length === 0">
+                  <td colspan="2" class="text-center">No hay precios configurados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { billingService } from '../services/billing.service';
 import BillResultCard from '../components/BillResultCard.vue';
 import type {
@@ -156,6 +207,8 @@ import type {
   CreatePricePayload,
   BillCalculationResponse,
   PatientLookup,
+  ChargeItem,
+  PriceItemResponse
 } from '../types/billing.types';
 
 // Estado de búsqueda de paciente
@@ -183,7 +236,33 @@ const priceForm = reactive<CreatePricePayload>({
 const loadingPrice = ref(false);
 const priceError = ref('');
 const priceSuccess = ref('');
-const recentPrices = ref<CreatePricePayload[]>([]);
+
+// Estado de Tablas en vivo
+const pricesList = ref<PriceItemResponse['item'][]>([]);
+const chargesList = ref<ChargeItem[]>([]);
+const loadingData = ref(false);
+
+// Función para cargar los datos en vivo desde el Backend
+const loadDashboardData = async () => {
+  loadingData.value = true;
+  try {
+    const [prices, charges] = await Promise.all([
+      billingService.getPrices(),
+      billingService.getCharges()
+    ]);
+    pricesList.value = prices;
+    chargesList.value = charges;
+  } catch (error) {
+    console.error('Error cargando datos de facturación', error);
+  } finally {
+    loadingData.value = false;
+  }
+};
+
+// Cargar las tablas apenas se monta la pantalla
+onMounted(() => {
+  loadDashboardData();
+});
 
 // Traduce automáticamente español/inglés según cómo esté guardado en EHR
 const normalizeCoverage = (raw: string): BillingCoverageType => {
@@ -240,6 +319,10 @@ const handleCalculate = async () => {
       patientDni: selectedPatient.value.dni,
       coverageType: billForm.coverageType,
     };
+    
+    // Recargar tabla de cargos automáticamente
+    await loadDashboardData();
+
   } catch (error: any) {
     const msg = error.response?.data?.message;
     billError.value = Array.isArray(msg)
@@ -259,13 +342,12 @@ const handleSavePrice = async () => {
     const res = await billingService.savePrice({ ...priceForm });
     priceSuccess.value = res.message || 'Precio guardado correctamente.';
 
-    recentPrices.value.unshift({
-      itemName: priceForm.itemName,
-      unitPrice: priceForm.unitPrice,
-    });
-
     priceForm.itemName = '';
     priceForm.unitPrice = 0;
+
+    // Recargar tabla de precios automáticamente
+    await loadDashboardData();
+
   } catch (error: any) {
     const msg = error.response?.data?.message;
     priceError.value = Array.isArray(msg)
@@ -468,33 +550,66 @@ const handleSavePrice = async () => {
   color: #1e8449;
 }
 
-.recent-list {
-  margin-top: 1.5rem;
-  border-top: 1px solid #ecf0f1;
-  padding-top: 1rem;
+/* --- ESTILOS DE LAS TABLAS --- */
+.tables-section {
+  margin-top: 2rem;
+  border-top: 2px dashed #dce1e7;
+  padding-top: 2rem;
 }
 
-.recent-list h3 {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.95rem;
-  color: #34495e;
+.tables-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
 
-.recent-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+@media (min-width: 1024px) {
+  .tables-grid {
+    grid-template-columns: 2fr 1fr; /* La tabla de cargos es más ancha */
+  }
 }
 
-.recent-list li {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  background-color: #f8f9fa;
-  border-radius: 4px;
+.table-card {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-card h3 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 0.9rem;
 }
+
+th, td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+th {
+  background-color: #f8f9fa;
+  color: #7f8c8d;
+  font-weight: bold;
+}
+
+.amount {
+  font-weight: bold;
+}
+
+.patient-amount { color: #d35400; }
+.third-party { color: #1e8449; }
+.text-small { font-size: 0.8rem; color: #7f8c8d; }
+.text-center { text-align: center; color: #95a5a6; }
+.loading-state { text-align: center; color: #7f8c8d; padding: 2rem; }
 </style>
