@@ -1,5 +1,5 @@
 import { apiClient } from '../../../core/api/axios.client';
-import type { GenerateBillPayload, CreatePricePayload, BillCalculationResponse, PriceItemResponse, PatientLookup } from '../types/billing.types';
+import type { GenerateBillPayload, CreatePricePayload, BillCalculationResponse, PriceItemResponse, PatientLookup, ChargeItem } from '../types/billing.types';
 
 export const billingService = {
 
@@ -17,4 +17,14 @@ export const billingService = {
     const response = await apiClient.post<PriceItemResponse>('/billing/prices', payload);
     return response.data;
   },
+
+  async getPrices(): Promise<PriceItemResponse['item'][]> {
+    const response = await apiClient.get('/billing/prices');
+    return response.data;
+  },
+
+  async getCharges(): Promise<ChargeItem[]> {
+    const response = await apiClient.get('/billing/charges');
+    return response.data;
+  }
 };

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { IsString, IsNumber, IsIn, IsNotEmpty, Min } from 'class-validator'; // <-- Agregá Min
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import type { CoverageType } from '../../domain/factories/billing-strategy.facto
 import { RolesGuard, Roles } from '../../../iam/infrastructure/guards/roles.guard';
 import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 import { PriceListOrmEntity } from '../persistance/price-list.orm-entity';
+import { ChargeOrmEntity } from '../persistance/charge.orm-entity';
 
 // 1. DTO validado para la lista de precios
 export class CreatePriceDto {
@@ -32,7 +33,10 @@ export class BillingController {
     private readonly calculateCostUseCase: CalculateConsultationCostUseCase,
     // Inyectamos el repo directo acá solo para el ABM simple de precios
     @InjectRepository(PriceListOrmEntity)
-    private readonly priceRepo: Repository<PriceListOrmEntity> 
+    private readonly priceRepo: Repository<PriceListOrmEntity>,
+
+    @InjectRepository(ChargeOrmEntity)
+    private readonly chargeRepo: Repository<ChargeOrmEntity>
   ) {}
 
   @Post('calculate')
@@ -48,5 +52,22 @@ export class BillingController {
     const priceItem = this.priceRepo.create(dto);
     await this.priceRepo.save(priceItem);
     return { message: 'Precio actualizado en la lista', item: priceItem };
+  }
+
+  @Get('prices')
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.NURSE) // Enfermería también necesita ver precios
+  async getPrices() {
+    return this.priceRepo.find({
+      order: { itemName: 'ASC' }, // Orden alfabético
+    });
+  }
+
+  @Get('charges')
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
+  async getCharges() {
+    return this.chargeRepo.find({
+      order: { createdAt: 'DESC' }, // Los más recientes primero
+      take: 100, // Limitamos a los últimos 100 para no sobrecargar la vista
+    });
   }
 }
