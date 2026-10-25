@@ -21,5 +21,24 @@ export const AdmissionService = {
     // Obtener la cola de triaje (ejemplo)
     getTriageQueue() {
         return apiClient.get('/admission/triage');
+    },
+
+    // Obtener todos los turnos del día
+    getAppointments() {
+        return apiClient.get('/admission/appointments'); 
+    },
+
+    // Cancelar turno (el backend disparará el evento PromoteStandbyListener)
+    cancelAppointment(appointmentId: string) {
+        return apiClient.patch(`/admission/appointments/${appointmentId}/cancel`);
+    },
+
+    // Registrar un paciente en triaje (Enfermería)
+    addToTriage(data: { patientId: string; level: number; symptoms: string }) {
+        return apiClient.post('/admission/triage', data);
+    },
+
+    getPatientByDni(dni: string) {
+        return apiClient.get(`/ehr/patients/dni/${dni}`);
     }
 };

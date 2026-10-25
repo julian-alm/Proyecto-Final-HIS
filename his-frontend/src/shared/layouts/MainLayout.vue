@@ -25,7 +25,15 @@
           v-if="['ADMIN', 'RECEPCIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/admission" 
           class="nav-item">
-          Admisión y Triaje
+          Registrar Pacientes
+        </router-link>
+
+        <!-- Recepción / Enfermería / Médicos -->
+        <router-link 
+          v-if="['ADMIN', 'RECEPCIONIST', 'NURSE', 'DOCTOR'].includes(authStore.userRole || '')" 
+          to="/triage" 
+          class="nav-item">
+          Asignación y Triaje
         </router-link>
 
         <!-- Incluye a CLEANER para pasar camas de En Limpieza -> Disponible -->

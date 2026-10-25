@@ -18,7 +18,7 @@ const handleRegisterPatient = async () => {
     
     try {
         const response = await AdmissionService.registerPatient(patientData.value);
-        successMessage.value = `Paciente registrado con éxito. ID: ${response.data.patientId}`;
+        successMessage.value = `Paciente registrado con éxito. ID: ${response.data.patientId.id}`;
         
         // Limpiar formulario
         patientData.value = { dni: '', firstName: '', lastName: '', coverageType: 'PRIVATE' };

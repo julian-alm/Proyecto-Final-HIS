@@ -29,12 +29,22 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'admission',
         name: 'Admission',
-        redirect: '/billing',
+        component: () => import('../../modules/admission/views/ReceptionView.vue'),
+      },
+      {
+        path: 'triage',
+        name: 'Triage',
+        component: () => import('../../modules/admission/views/TriageView.vue'),
       },
       {
         path: 'beds',
         name: 'Beds',
         redirect: '/billing',
+      },
+      {
+        path: 'inventory',
+        name: 'Inventory',
+        component: () => import('../../modules/inventory/views/InventoryView.vue'),
       },
       {
         path: 'nursing',
