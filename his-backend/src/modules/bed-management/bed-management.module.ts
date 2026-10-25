@@ -9,6 +9,8 @@ import { IamModule } from '../iam/iam.module';
 import { DischargeBedUseCase } from './application/use-cases/discharge-bed.use-case';
 import { CleanBedUseCase } from './application/use-cases/clean-bed.use-case';
 import { BedMonitorListener } from './application/listeners/bed-monitor.listener';
+import { BlockBedUseCase } from '../bed-management/application/use-cases/block-bed.use-case';
+import { UnblockBedUseCase } from '../bed-management/application/use-cases/unblock-bed.use-case';
 
 @Module({
     imports: [
@@ -21,6 +23,8 @@ import { BedMonitorListener } from './application/listeners/bed-monitor.listener
         DischargeBedUseCase,
         CleanBedUseCase,
         BedMonitorListener,
+        BlockBedUseCase,
+        UnblockBedUseCase,
         {
             provide: IBedRepository,
             useClass: TypeOrmBedRepository,

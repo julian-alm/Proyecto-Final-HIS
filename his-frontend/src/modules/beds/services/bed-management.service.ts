@@ -1,31 +1,38 @@
 import { apiClient } from '../../../core/api/axios.client';
+import type { BedItem, PatientLookup } from '../types/bed.types';
 
-export interface BedDto {
-    id: string;
-    roomNumber: string;
-    bedNumber: string;
-    status: 'LIBRES' | 'OCUPADAS' | 'EN_LIMPIEZA' | 'BLOQUEADAS';
-    patientId?: string;
-}
+export const bedService = {
+  // 1. Obtener todas las camas (el nuevo endpoint)
+  async getBeds(): Promise<BedItem[]> {
+    const response = await apiClient.get<BedItem[]>('/beds');
+    return response.data;
+  },
 
-export const BedManagementService = {
-    // Obtener todas las camas para armar el mapa visual
-    getAllBeds() {
-        return apiClient.get<BedDto[]>('/bed-management/beds');
-    },
+  // 2. Asignar cama (Requiere buscar primero paciente por DNI desde la vista)
+  async assignBed(id: string, patientId: string): Promise<void> {
+    await apiClient.patch(`/beds/${id}/assign`, { patientId });
+  },
 
-    // Asignar paciente a una cama (Pasa a OCCUPIED)
-    assignBed(bedId: string, patientId: string) {
-        return apiClient.patch(`/bed-management/beds/${bedId}/assign`, { patientId });
-    },
+  // 3. Dar de Alta (Pasa a En Limpieza)
+  async dischargeBed(id: string): Promise<void> {
+    await apiClient.patch(`/beds/${id}/discharge`);
+  },
 
-    // Dar de alta al paciente (Pasa a CLEANING)
-    dischargeBed(bedId: string) {
-        return apiClient.patch(`/bed-management/beds/${bedId}/discharge`);
-    },
+  // 4. Confirmar Limpieza (Pasa a Libres)
+  async cleanBed(id: string): Promise<void> {
+    await apiClient.patch(`/beds/${id}/clean`);
+  }, // <-- ¡Acá estaba faltando esta coma!
 
-    // Limpiar la cama (Pasa a AVAILABLE)
-    cleanBed(bedId: string) {
-        return apiClient.patch(`/bed-management/beds/${bedId}/clean`);
-    }
+  async findPatientByDni(dni: string): Promise<PatientLookup> {
+    const response = await apiClient.get<PatientLookup>(`/ehr/patients/dni/${encodeURIComponent(dni.trim())}`);
+    return response.data;
+  },
+
+  async blockBed(id: string): Promise<void> {
+    await apiClient.patch(`/beds/${id}/block`);
+  },
+  
+  async unblockBed(id: string): Promise<void> {
+    await apiClient.patch(`/beds/${id}/unblock`);
+  }
 };
