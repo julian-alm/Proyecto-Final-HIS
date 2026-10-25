@@ -7,6 +7,7 @@ export interface IBedState {
     dischargePatient(bed: Bed): void;
     finishCleaning(bed: Bed): void;
     blockForMaintenance(bed: Bed): void;
+    unblock(bed: Bed): void;
 }
 
 export class FreeState implements IBedState {
@@ -19,6 +20,7 @@ export class FreeState implements IBedState {
     dischargePatient(): void { throw new DomainException('No se puede dar de alta a una cama libre.'); }
     finishCleaning(): void { throw new DomainException('La cama ya está libre, no está en limpieza.'); }
     blockForMaintenance(bed: Bed): void { bed.changeState(new BlockedState()); }
+    unblock(): void { throw new DomainException('La cama no está bloqueada.'); }
     }
 
 export class OccupiedState implements IBedState {
@@ -33,6 +35,7 @@ export class OccupiedState implements IBedState {
 
     finishCleaning(): void { throw new DomainException('Una cama ocupada no está en proceso de limpieza.'); }
     blockForMaintenance(): void { throw new DomainException('No se puede bloquear una cama ocupada por un paciente.'); }
+    unblock(): void { throw new DomainException('La cama no está bloqueada.'); }
     }
 
     export class CleaningState implements IBedState {
@@ -46,6 +49,7 @@ export class OccupiedState implements IBedState {
     }
 
     blockForMaintenance(bed: Bed): void { bed.changeState(new BlockedState()); }
+    unblock(): void { throw new DomainException('La cama no está bloqueada.'); }
     }
 
     export class BlockedState implements IBedState {
@@ -55,4 +59,8 @@ export class OccupiedState implements IBedState {
     dischargePatient(): void { throw new DomainException('La cama está bloqueada y vacía.'); }
     finishCleaning(): void { throw new DomainException('La cama está en mantenimiento, no en limpieza.'); }
     blockForMaintenance(): void { throw new DomainException('La cama ya está bloqueada.'); }
+    unblock(bed: Bed): void { 
+        bed.changeState(new FreeState()); 
+    }
+    
 }

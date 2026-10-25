@@ -9,6 +9,7 @@ import { RegisterUserUseCase } from './application/use-cases/register-user.use-c
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { IamController } from './infrastructure/controllers/iam.controller';
 import { RolesGuard } from './infrastructure/guards/roles.guard';
+import { GetUsersUseCase } from './application/use-cases/get-users.use-case';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RolesGuard } from './infrastructure/guards/roles.guard';
     RegisterUserUseCase,
     LoginUserUseCase,
     RolesGuard,
+    GetUsersUseCase,
     {
       provide: IUserRepository,
       useClass: PostgresUserRepository,

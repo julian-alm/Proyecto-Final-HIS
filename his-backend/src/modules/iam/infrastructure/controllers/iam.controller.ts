@@ -1,8 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Get , Body } from '@nestjs/common';
 import { IsEmail, IsEnum, IsNotEmpty, MinLength } from 'class-validator';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.use-case';
 import { LoginUserUseCase } from '../../application/use-cases/login-user.use-case';
 import { UserRole } from '../../domain/entities/user-role.enum';
+import { GetUsersUseCase } from '../../application/use-cases/get-users.use-case';
 
 export class RegisterUserDto {
   @IsNotEmpty()
@@ -31,6 +32,7 @@ export class IamController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
+    private readonly getUsersUseCase: GetUsersUseCase,
   ) {}
 
   @Post('register')
@@ -41,5 +43,10 @@ export class IamController {
   @Post('login')
   login(@Body() dto: LoginUserDto) {
     return this.loginUserUseCase.execute(dto.email, dto.passwordPlain);
+  }
+
+  @Get('users')
+  getUsers() {
+    return this.getUsersUseCase.execute();
   }
 }

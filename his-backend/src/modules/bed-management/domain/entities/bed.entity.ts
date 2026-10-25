@@ -28,4 +28,12 @@ export class Bed {
     markAsClean(): void {
         this.state.finishCleaning(this);
     }
+
+    block(): void {
+        this.state.blockForMaintenance(this);
+    }
+
+    unblock(): void {
+        this.state.unblock(this);
+    }
 }
