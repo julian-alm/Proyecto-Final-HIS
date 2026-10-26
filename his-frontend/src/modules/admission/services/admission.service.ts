@@ -14,7 +14,7 @@ export const AdmissionService = {
     },
 
     // Agendar un turno
-    bookAppointment(data: { patientId: string; doctorId: string; date: string }) {
+    bookAppointment(data: { doctorId: string; patientId: string; startTime: string }) {
         return apiClient.post('/admission/appointments', data);
     },
 
@@ -40,5 +40,23 @@ export const AdmissionService = {
 
     getPatientByDni(dni: string) {
         return apiClient.get(`/ehr/patients/dni/${dni}`);
+    },
+
+    getAllDoctors() {
+    return apiClient.get('/staff/doctors');
+    },
+
+    // Obtener agenda del médico
+    getDoctorAgenda(doctorId: string) {
+        return apiClient.get(`/admission/appointments/doctor/${doctorId}`);
+    },
+
+    // Insertar un entreturno (HU 1.2)
+    insertEntreturno(data: { doctorId: string; patientId: string; startTime: string }) {
+        return apiClient.post('/admission/appointments/entreturno', data);
+    },
+
+    completeAppointment(appointmentId: string) {
+        return apiClient.patch(`/admission/appointments/${appointmentId}/complete`);
     }
 };

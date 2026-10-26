@@ -7,10 +7,19 @@ describe('Appointment Entity (State Pattern)', () => {
 
     // Antes de cada prueba, creamos un turno nuevo (Estado por defecto: DISPONIBLE)
     beforeEach(() => {
+        // Simulamos un turno de 30 minutos
+        const start = new Date('2026-10-20T10:00:00Z');
+        const end = new Date('2026-10-20T10:30:00Z');
+
         appointment = new Appointment(
             'uuid-turno-1',
             'dr-smith',
-            new Date('2026-10-20T10:00:00Z')
+            start,
+            end, // <-- AGREGADO (endTime)
+            null, // patientId
+            undefined, // Toma el state por defecto (AvailableState)
+            1, // version
+            false // isOverbooking
         );
     });
 

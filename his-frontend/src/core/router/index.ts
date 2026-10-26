@@ -17,7 +17,11 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        redirect: '/billing', // Redirección por defecto al entrar
+        // Redirección dinámica: Evalúa el rol apenas entra a la raíz "/"
+        redirect: () => {
+          const authStore = useAuthStore();
+          return authStore.userRole === 'CLEANER' ? '/beds' : '/billing';
+        },
       },
       {
         // Tu módulo: Facturación
@@ -37,9 +41,15 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../../modules/admission/views/TriageView.vue'),
       },
       {
+        path: 'doctor-agenda',
+        name: 'Doctor-agenda',
+        component: () => import('../../modules/admission/views/DoctorAgendaView.vue'),
+      },
+      {
         path: 'beds',
         name: 'Beds',
-        redirect: '/billing',
+        component: () => import('../../modules/beds/views/BedManagementView.vue'),
+        // Protegido: Todos pueden ver, pero la UI oculta botones por rol
       },
       {
         path: 'inventory',
@@ -75,9 +85,9 @@ router.beforeEach((to, _from, next) => {
     return next('/login');
   }
 
-  // 2. Si ya está logueado e intenta ir a /login -> mandar al panel principal
+  // 2. Si ya está logueado e intenta ir a /login -> mandar a su panel correspondiente
   if (to.path === '/login' && authStore.isAuthenticated) {
-    return next('/');
+    return next(authStore.userRole === 'CLEANER' ? '/beds' : '/billing');
   }
 
   // 3. Validación de autorización por Rol (RBAC en el Frontend)

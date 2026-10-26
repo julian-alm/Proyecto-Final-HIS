@@ -38,3 +38,14 @@ export interface PriceItemResponse {
     unitPrice: number;
   };
 }
+
+export interface ChargeItem {
+  id: string;
+  patientId: string;
+  baseCost: string | number;
+  patientAmount: string | number;
+  thirdPartyAmount: string | number;
+  concept: string;
+  createdAt: string;
+  sourceEventId?: string;
+}
