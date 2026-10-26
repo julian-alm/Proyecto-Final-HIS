@@ -1,0 +1,14 @@
+### Obtener la agenda de un médico específico
+# 1. Reemplaza el token con uno válido obtenido en el endpoint de Login
+# 2. Reemplaza el :doctorId con un UUID real de tu base de datos
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNWU4YzYzOC03MzY2LTQyNGEtOWNhYi1iY2FiODgzMmI2NmEiLCJlbWFpbCI6ImFkbWluQGhvc3BpdGFsLmNvbSIsInJvbGUiOiJBRE1JTiIsImZ1bGxOYW1lIjoiRGlyZWN0b3IgQWRtaW5pc3RyYWRvciIsImlhdCI6MTc5Mjk2MTMyOSwiZXhwIjoxNzkyOTkwMTI5fQ.bJ_mDE5i-kFwPJq8q6G72fYSgZ7bSTLUK0PTvWlx6Yw
+@doctorId = b6056dc2-c9f7-4f11-addc-72313ee24a78
+
+GET http://localhost:3000/admission/appointments/doctor/{{doctorId}}
+Authorization: Bearer {{token}}
+
+
+### Obtener la lista de todos los médicos (Módulo Staff)
+GET http://localhost:3000/staff/doctors
+Authorization: Bearer {{token}}

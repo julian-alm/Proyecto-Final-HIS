@@ -14,12 +14,49 @@ export const AdmissionService = {
     },
 
     // Agendar un turno
-    bookAppointment(data: { patientId: string; doctorId: string; date: string }) {
+    bookAppointment(data: { doctorId: string; patientId: string; startTime: string }) {
         return apiClient.post('/admission/appointments', data);
     },
 
     // Obtener la cola de triaje (ejemplo)
     getTriageQueue() {
         return apiClient.get('/admission/triage');
+    },
+
+    // Obtener todos los turnos del día
+    getAppointments() {
+        return apiClient.get('/admission/appointments'); 
+    },
+
+    // Cancelar turno (el backend disparará el evento PromoteStandbyListener)
+    cancelAppointment(appointmentId: string) {
+        return apiClient.patch(`/admission/appointments/${appointmentId}/cancel`);
+    },
+
+    // Registrar un paciente en triaje (Enfermería)
+    addToTriage(data: { patientId: string; level: number; symptoms: string }) {
+        return apiClient.post('/admission/triage', data);
+    },
+
+    getPatientByDni(dni: string) {
+        return apiClient.get(`/ehr/patients/dni/${dni}`);
+    },
+
+    getAllDoctors() {
+    return apiClient.get('/staff/doctors');
+    },
+
+    // Obtener agenda del médico
+    getDoctorAgenda(doctorId: string) {
+        return apiClient.get(`/admission/appointments/doctor/${doctorId}`);
+    },
+
+    // Insertar un entreturno (HU 1.2)
+    insertEntreturno(data: { doctorId: string; patientId: string; startTime: string }) {
+        return apiClient.post('/admission/appointments/entreturno', data);
+    },
+
+    completeAppointment(appointmentId: string) {
+        return apiClient.patch(`/admission/appointments/${appointmentId}/complete`);
     }
 };

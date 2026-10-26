@@ -39,8 +39,26 @@
           v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/admission" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">assignment_add</span>
+          Registrar Pacientes
+        </router-link>
+
+        <!-- Recepción / Enfermería / Médicos -->
+        <router-link 
+          v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
+          to="/triage" 
+          class="nav-item">
           <span class="material-symbols-rounded nav-icon">assignment_ind</span>
           Admisión y Triaje
+        </router-link>
+
+        <!-- Agenda exclusiva para el Médico -->
+        <router-link 
+          v-if="['ADMIN', 'DOCTOR'].includes(authStore.userRole || '')" 
+          to="/doctor-agenda" 
+          class="nav-item">
+          <span class="material-symbols-rounded nav-icon">list_alt</span>
+          Mi Agenda
         </router-link>
 
         <router-link 

@@ -9,6 +9,7 @@ import { IamModule } from './modules/iam/iam.module';
 import { BedManagementModule } from './modules/bed-management/bed-management.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { InventoryModule } from './modules/inventory/inventory.module'
+import { StaffModule } from './modules/staff/staff.module'
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { InventoryModule } from './modules/inventory/inventory.module'
         BedManagementModule,
         BillingModule,
         InventoryModule,
+        StaffModule,
     ],
 })
 export class AppModule {}

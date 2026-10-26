@@ -13,6 +13,8 @@ import { ITriageRepository } from './domain/ports/triage.repository.port';
 import { CheckInAppointmentUseCase } from './application/use-case/check-in-appointment.use-case';
 import { CancelAppointmentUseCase } from './application/use-case/cancel-appointment.use-case';
 import { PromoteStandbyListener } from './application/listeners/promote-standby.listener';
+import { InsertEntreturnoUseCase } from './application/use-case/insert-entreturno.use-case';
+import { GetDoctorAgendaUseCase } from './application/use-case/get-doctor-agenda.use-case'
 import { IamModule } from '../iam/iam.module';
 
 @Module({
@@ -26,8 +28,10 @@ import { IamModule } from '../iam/iam.module';
         CheckInAppointmentUseCase,
         AddTriageUseCase,
         GetNextTriageUseCase,
+        GetDoctorAgendaUseCase,
         CancelAppointmentUseCase,
         PromoteStandbyListener,
+        InsertEntreturnoUseCase,
         {
             provide: IAppointmentRepository,
             useClass: TypeOrmAppointmentRepository, // Inyección de Dependencias

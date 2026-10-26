@@ -33,13 +33,28 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'admission',
         name: 'Admission',
-        redirect: '/billing',
+        component: () => import('../../modules/admission/views/ReceptionView.vue'),
+      },
+      {
+        path: 'triage',
+        name: 'Triage',
+        component: () => import('../../modules/admission/views/TriageView.vue'),
+      },
+      {
+        path: 'doctor-agenda',
+        name: 'Doctor-agenda',
+        component: () => import('../../modules/admission/views/DoctorAgendaView.vue'),
       },
       {
         path: 'beds',
         name: 'Beds',
         component: () => import('../../modules/beds/views/BedManagementView.vue'),
         // Protegido: Todos pueden ver, pero la UI oculta botones por rol
+      },
+      {
+        path: 'inventory',
+        name: 'Inventory',
+        component: () => import('../../modules/inventory/views/InventoryView.vue'),
       },
       {
         path: 'nursing',

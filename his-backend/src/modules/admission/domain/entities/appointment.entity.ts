@@ -5,9 +5,11 @@ export class Appointment {
         public readonly id: string,
         public readonly doctorId: string,
         public readonly startTime: Date,
+        public endTime: Date,
         public patientId: string | null = null,
         private state: IAppointmentState = new AvailableState(),
-        public version: number = 1
+        public version: number = 1,
+        public isOverbooking: boolean = false
     ) {}
 
     get statusName(): string {
@@ -18,7 +20,6 @@ export class Appointment {
         this.state = newState;
     }
 
-    // Los métodos delegan la acción al Estado actual (Inversión de Control)
     book(patientId: string): void {
         this.state.book(this, patientId);
     }

@@ -1,33 +1,51 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IAppointmentRepository } from '../../domain/ports/appointment.repository.port';
+import { Appointment } from '../../domain/entities/appointment.entity';
+import { BookedState } from '../../domain/states/appointment.state';
 import { DomainException } from '../../../../shared/domain/domain-exception';
+import { randomUUID } from 'crypto';
 
 export class BookAppointmentCommand {
     constructor(
-        public readonly appointmentId: string,
+        public readonly doctorId: string,
         public readonly patientId: string,
+        public readonly startTime: Date
     ) {}
-    }
+}
 
-    @Injectable()
-    export class BookAppointmentUseCase {
+@Injectable()
+export class BookAppointmentUseCase {
     constructor(
         @Inject(IAppointmentRepository)
-        private readonly appointmentRepository: IAppointmentRepository,
+        private readonly appointmentRepository: IAppointmentRepository
     ) {}
 
     async execute(command: BookAppointmentCommand): Promise<void> {
-        // 1. Recuperar la entidad de dominio
-        const appointment = await this.appointmentRepository.findById(command.appointmentId);
+        // Duración estándar de 30 minutos
+        const endTime = new Date(command.startTime.getTime() + 30 * 60000);
 
-        if (!appointment) {
-        throw new DomainException('Turno no encontrado.');
+        // VALIDACIÓN: Verificar si hay superposición
+        const isOccupied = await this.appointmentRepository.hasTimeConflict(
+            command.doctorId, 
+            command.startTime, 
+            endTime
+        );
+
+        if (isOccupied) {
+            throw new DomainException('El profesional ya tiene un turno asignado en ese rango horario.');
         }
 
-        // 2. Ejecutar regla de negocio (cambia estado internamente)
-        appointment.book(command.patientId);
+        const appointment = new Appointment(
+            randomUUID(),
+            command.doctorId,
+            command.startTime,
+            endTime,
+            command.patientId,
+            new BookedState(), 
+            1,
+            false
+        );
 
-        // 3. Persistir. Si otro usuario guardó un milisegundo antes, el adaptador lanzará un error de concurrencia.
         await this.appointmentRepository.save(appointment);
     }
 }
