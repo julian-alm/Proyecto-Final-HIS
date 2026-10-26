@@ -52,6 +52,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../../modules/iam/views/RegisterUserView.vue'),
         meta: { roles: ['ADMIN'] },
       },
+      {
+        path: 'inventory',
+        name: 'Inventory',
+        component: () => import('../../modules/inventory/views/InventoryView.vue'),
+      },
     ],
   },
 ];

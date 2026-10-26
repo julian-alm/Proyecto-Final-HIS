@@ -31,6 +31,7 @@
           v-if="authStore.isAdmin" 
           to="/users" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">badge</span>
           Registrar Personal (IAM)
         </router-link>
 
@@ -38,6 +39,7 @@
           v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/admission" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">assignment_ind</span>
           Admisión y Triaje
         </router-link>
 
@@ -45,13 +47,23 @@
           v-if="['ADMIN', 'NURSE', 'RECEPTIONIST', 'CLEANER'].includes(authStore.userRole || '')" 
           to="/beds" 
           class="nav-item">
-          Camas e Inventario
+          <span class="material-symbols-rounded nav-icon">bed</span>
+          Gestión de Camas
+        </router-link>
+
+        <router-link 
+          v-if="['ADMIN', 'NURSE', 'RECEPTIONIST'].includes(authStore.userRole || '')" 
+          to="/inventory" 
+          class="nav-item">
+          <span class="material-symbols-rounded nav-icon">inventory_2</span>
+          Inventario
         </router-link>
 
         <router-link 
           v-if="['ADMIN', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/nursing" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">medical_services</span>
           Enfermería y HCE
         </router-link>
 
@@ -59,12 +71,14 @@
           v-if="['ADMIN', 'RECEPTIONIST'].includes(authStore.userRole || '')" 
           to="/billing" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">receipt_long</span>
           Facturación
         </router-link>
       </nav>
 
       <!-- Botón de Cerrar Sesión -->
       <button @click="handleLogout" class="btn-logout">
+        <span class="material-symbols-rounded nav-icon">logout</span>
         Cerrar Sesión
       </button>
     </aside>
@@ -218,13 +232,19 @@ const getInitials = (name?: string | null) => {
   transition: all 0.2s;
   display: flex;
   align-items: center;
+  gap: 0.75rem; /* Espacio entre icono y texto */
   font-size: 0.9rem;
   font-weight: 500;
 }
 
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+.nav-icon {
+  font-size: 1.25rem;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Cuando el item está activo, el icono se rellena para destacar más */
+.nav-item.router-link-active .nav-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* ESTADO ACTIVO (Módulo actual) */
