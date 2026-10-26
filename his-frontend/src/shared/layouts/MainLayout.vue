@@ -31,6 +31,7 @@
           v-if="authStore.isAdmin" 
           to="/users" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">badge</span>
           Registrar Personal (IAM)
         </router-link>
 
@@ -47,6 +48,7 @@
           v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/triage" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">assignment_ind</span>
           Admisión y Triaje
         </router-link>
 
@@ -63,13 +65,23 @@
           v-if="['ADMIN', 'NURSE', 'RECEPTIONIST', 'CLEANER'].includes(authStore.userRole || '')" 
           to="/beds" 
           class="nav-item">
-          Camas e Inventario
+          <span class="material-symbols-rounded nav-icon">bed</span>
+          Gestión de Camas
+        </router-link>
+
+        <router-link 
+          v-if="['ADMIN', 'NURSE', 'RECEPTIONIST'].includes(authStore.userRole || '')" 
+          to="/inventory" 
+          class="nav-item">
+          <span class="material-symbols-rounded nav-icon">inventory_2</span>
+          Inventario
         </router-link>
 
         <router-link 
           v-if="['ADMIN', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/nursing" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">medical_services</span>
           Enfermería y HCE
         </router-link>
 
@@ -77,12 +89,14 @@
           v-if="['ADMIN', 'RECEPTIONIST'].includes(authStore.userRole || '')" 
           to="/billing" 
           class="nav-item">
+          <span class="material-symbols-rounded nav-icon">receipt_long</span>
           Facturación
         </router-link>
       </nav>
 
       <!-- Botón de Cerrar Sesión -->
       <button @click="handleLogout" class="btn-logout">
+        <span class="material-symbols-rounded nav-icon">logout</span>
         Cerrar Sesión
       </button>
     </aside>
