@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Param, HttpException, HttpStatus, Inject, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpException, HttpStatus, Inject, UseGuards } from '@nestjs/common';
 import { ISupplyRepository } from '../../domain/ports/supply.repository.port';
 import { MedicalSupply } from '../../domain/entities/medical-supply.entity';
-import { RolesGuard } from '../../../iam/infrastructure/guards/roles.guard';
-import { Roles } from '../../../iam/infrastructure/guards/roles.guard';
+import { RolesGuard, Roles } from '../../../iam/infrastructure/guards/roles.guard';
 import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,28 +13,47 @@ export class InventoryController {
         private readonly supplyRepository: ISupplyRepository,
     ) {}
 
-    // Endpoint para cargar el insumo inicial desde REST Client (ej: 50 unidades de Ibuprofeno 400mg)
-    @Post('supplies')
+    @Post('movements')
     @Roles(UserRole.ADMIN, UserRole.NURSE)
-    async createOrUpdateSupply(@Body() body: { name: string; stock: number }) {
-        const existing = await this.supplyRepository.findByName(body.name);
-        const supply = new MedicalSupply(
-            existing ? existing.id : uuidv4(),
-            body.name,
-            Number(body.stock),
-        );
-        await this.supplyRepository.save(supply);
-        return { message: 'Stock inicial configurado correctamente', supply };
+    async registerMovement(@Body() body: { medicationName: string; quantity: number; type: 'INGRESO' | 'EGRESO'; reason: string }) {
+        if (!body.medicationName || !body.quantity || !body.type) {
+            throw new HttpException('Faltan datos obligatorios', HttpStatus.BAD_REQUEST);
+        }
+
+        if (body.type === 'INGRESO') {
+            const existing = await this.supplyRepository.findByName(body.medicationName);
+            // Tu método save() ya se encarga de crear el insumo y registrar el movimiento tipo INGRESO
+            const supply = new MedicalSupply(
+                existing ? existing.id : uuidv4(),
+                body.medicationName,
+                Number(body.quantity),
+                existing ? existing.description : body.reason
+            );
+            await this.supplyRepository.save(supply);
+            return { message: 'Ingreso registrado correctamente' };
+        } 
+        
+        if (body.type === 'EGRESO') {
+            try {
+                // Tu método atómico ya valida stock insuficiente e inserta el EGRESO
+                await this.supplyRepository.decrementStockAtomically(body.medicationName, Number(body.quantity));
+                return { message: 'Egreso registrado correctamente' };
+            } catch (error: any) {
+                // Capturamos tu DomainException (ej: "Stock insuficiente")
+                throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+            }
+        }
     }
 
-    // Endpoint para verificar el stock actual tras el descuento automático
-    @Get('supplies/:name')
+    @Get('movements')
     @Roles(UserRole.ADMIN, UserRole.NURSE, UserRole.DOCTOR)
-    async getSupplyStock(@Param('name') name: string) {
-        const supply = await this.supplyRepository.findByName(name);
-        if (!supply) {
-            throw new HttpException('Insumo no encontrado', HttpStatus.NOT_FOUND);
-        }
-        return supply;
+    async getMovementsHistory() {
+        return await this.supplyRepository.getMovementHistory();
+    }
+
+    @Get('stock')
+    @Roles(UserRole.ADMIN, UserRole.NURSE, UserRole.DOCTOR)
+    async getCurrentStock() {
+        return await this.supplyRepository.getCurrentStock();
     }
 }

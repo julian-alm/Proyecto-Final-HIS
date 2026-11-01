@@ -90,4 +90,26 @@ export class TypeOrmSupplyRepository implements ISupplyRepository {
 
         return result && result.totalStock ? parseInt(result.totalStock, 10) : 0;
     }
+
+    async getMovementHistory(): Promise<SupplyMovementOrmEntity[]> {
+        return await this.movementRepo.find({
+            order: { createdAt: 'DESC' },
+            take: 100 // Límite por rendimiento
+        });
+    }
+
+    async getCurrentStock(): Promise<{ medicationName: string; currentStock: number }[]> {
+        const results = await this.movementRepo
+            .createQueryBuilder('movement')
+            .select('movement.medicationName', 'medicationName')
+            .addSelect("SUM(CASE WHEN movement.type = 'INGRESO' THEN movement.quantity ELSE -movement.quantity END)", 'currentStock')
+            .groupBy('movement.medicationName')
+            .orderBy('movement.medicationName', 'ASC')
+            .getRawMany();
+
+        return results.map(row => ({
+            medicationName: row.medicationName,
+            currentStock: parseInt(row.currentStock, 10) || 0
+        }));
+    }
 }
