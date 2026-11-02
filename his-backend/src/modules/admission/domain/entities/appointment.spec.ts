@@ -5,9 +5,7 @@ import { BookedState, WaitingRoomState } from '../states/appointment.state';
 describe('Appointment Entity (State Pattern)', () => {
     let appointment: Appointment;
 
-    // Antes de cada prueba, creamos un turno nuevo (Estado por defecto: DISPONIBLE)
     beforeEach(() => {
-        // Simulamos un turno de 30 minutos
         const start = new Date('2026-10-20T10:00:00Z');
         const end = new Date('2026-10-20T10:30:00Z');
 
@@ -15,11 +13,11 @@ describe('Appointment Entity (State Pattern)', () => {
             'uuid-turno-1',
             'dr-smith',
             start,
-            end, // <-- AGREGADO (endTime)
-            null, // patientId
-            undefined, // Toma el state por defecto (AvailableState)
-            1, // version
-            false // isOverbooking
+            end,
+            null,
+            undefined,
+            1,
+            false
         );
     });
 
@@ -36,13 +34,11 @@ describe('Appointment Entity (State Pattern)', () => {
     });
 
     it('debería lanzar una DomainException si se intenta anunciar en sala de espera un turno DISPONIBLE', () => {
-        // Al intentar hacer check-in directo de un turno virgen, debe fallar
         expect(() => appointment.checkInWaitingRoom()).toThrow(DomainException);
         expect(() => appointment.checkInWaitingRoom()).toThrow('Un turno disponible no puede pasar a sala de espera.');
     });
 
     it('debería lanzar una DomainException si se intenta cancelar un turno que ya está EN_SALA_DE_ESPERA', () => {
-        // Forzamos el estado a Sala de Espera
         appointment.changeState(new WaitingRoomState());
 
         expect(() => appointment.cancel()).toThrow(DomainException);

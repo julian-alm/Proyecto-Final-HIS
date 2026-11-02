@@ -17,19 +17,16 @@ const routes: Array<RouteRecordRaw> = [
     children: [
       {
         path: '',
-        // Redirección dinámica: Evalúa el rol apenas entra a la raíz "/"
         redirect: () => {
           const authStore = useAuthStore();
           return authStore.userRole === 'CLEANER' ? '/beds' : '/billing';
         },
       },
       {
-        // Tu módulo: Facturación
         path: 'billing',
         name: 'Billing',
         component: () => import('../../modules/billing/views/BillingView.vue'),
       },
-      // Rutas preparadas para tus compañeros (redirigen temporalmente a billing hasta que creen sus archivos)
       {
         path: 'admission',
         name: 'Admission',
@@ -49,7 +46,6 @@ const routes: Array<RouteRecordRaw> = [
         path: 'beds',
         name: 'Beds',
         component: () => import('../../modules/beds/views/BedManagementView.vue'),
-        // Protegido: Todos pueden ver, pero la UI oculta botones por rol
       },
       {
         path: 'inventory',
@@ -81,24 +77,19 @@ const router = createRouter({
   routes,
 });
 
-// Guarda de Navegación Global (Criterio 3 de la Rúbrica)
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
 
-  // 1. Si la ruta requiere estar logueado y no hay token -> mandar a /login
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next('/login');
   }
 
-  // 2. Si ya está logueado e intenta ir a /login -> mandar a su panel correspondiente
   if (to.path === '/login' && authStore.isAuthenticated) {
     return next(authStore.userRole === 'CLEANER' ? '/beds' : '/billing');
   }
 
-  // 3. Validación de autorización por Rol (RBAC en el Frontend)
   const allowedRoles = to.meta.roles as string[] | undefined;
   if (allowedRoles && (!authStore.userRole || !allowedRoles.includes(authStore.userRole))) {
-    // Si no tiene el rol permitido, lo redirigimos a una vista segura según su rol
     return next(authStore.userRole === 'CLEANER' ? '/beds' : '/billing');
   }
 

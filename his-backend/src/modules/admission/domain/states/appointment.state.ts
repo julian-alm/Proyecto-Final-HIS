@@ -65,3 +65,7 @@ export class CancelledState implements IAppointmentState {
     complete(): void { throw new DomainException('El turno está cancelado.'); }
     cancel(): void { throw new DomainException('El turno ya está cancelado.'); }
 }
+
+export class ConsultingRoomState {
+    readonly name = 'EN_CONSULTORIO';
+}

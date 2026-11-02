@@ -14,7 +14,6 @@ const show = (msg: string, alertType: 'success' | 'error' = 'success') => {
   }, 3500);
 };
 
-// Exponer la función para que el componente padre la llame
 defineExpose({ show });
 </script>
 

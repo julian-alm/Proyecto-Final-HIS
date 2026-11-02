@@ -1,9 +1,6 @@
 <template>
   <div class="app-layout">
-    <!-- Barra Lateral -->
     <aside class="sidebar">
-      
-      <!-- Brand -->
       <div class="brand">
         <div class="brand-icon">+</div>
         <div class="brand-text">
@@ -12,7 +9,6 @@
         </div>
       </div>
 
-      <!-- User Card -->
       <div class="user-card">
         <div class="user-avatar">{{ getInitials(authStore.userFullName) }}</div>
         <div class="user-details">
@@ -21,7 +17,6 @@
         </div>
       </div>
 
-      <!-- Navegación -->
       <nav class="nav-links">
         <span class="nav-group-title">GENERAL</span>
         
@@ -43,7 +38,6 @@
           Registrar Pacientes
         </router-link>
 
-        <!-- Recepción / Enfermería / Médicos -->
         <router-link 
           v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
           to="/triage" 
@@ -52,7 +46,6 @@
           Admisión y Triaje
         </router-link>
 
-        <!-- Agenda exclusiva para el Médico -->
         <router-link 
           v-if="['ADMIN', 'DOCTOR'].includes(authStore.userRole || '')" 
           to="/doctor-agenda" 
@@ -94,14 +87,12 @@
         </router-link>
       </nav>
 
-      <!-- Botón de Cerrar Sesión -->
       <button @click="handleLogout" class="btn-logout">
         <span class="material-symbols-rounded nav-icon">logout</span>
         Cerrar Sesión
       </button>
     </aside>
 
-    <!-- Contenedor Principal (Ya sin el Top Bar inútil) -->
     <div class="main-wrapper">
       <main class="main-content">
         <router-view />
@@ -138,10 +129,9 @@ const getInitials = (name?: string | null) => {
   overflow: hidden;
 }
 
-/* --- BARRA LATERAL --- */
 .sidebar {
   width: 260px;
-  background-color: #0f172a; /* Color azul oscuro forzado */
+  background-color: #0f172a;
   color: #f8fafc;
   display: flex;
   flex-direction: column;
@@ -250,7 +240,7 @@ const getInitials = (name?: string | null) => {
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* Espacio entre icono y texto */
+  gap: 0.75rem;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -260,12 +250,10 @@ const getInitials = (name?: string | null) => {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* Cuando el item está activo, el icono se rellena para destacar más */
 .nav-item.router-link-active .nav-icon {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ESTADO ACTIVO (Módulo actual) */
 .nav-item.router-link-active {
   background-color: rgba(10, 162, 138, 0.15);
   color: #0aa28a;
@@ -291,12 +279,11 @@ const getInitials = (name?: string | null) => {
   background-color: rgba(239, 68, 68, 0.1);
 }
 
-/* --- CONTENEDOR PRINCIPAL --- */
 .main-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f4f7f6; /* Color de fondo general restaurado */
+  background-color: #f4f7f6;
   overflow: hidden;
 }
 
