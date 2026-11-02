@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { ITriageRepository } from '../../domain/ports/triage.repository.port';
 import { TriageEntry } from '../../domain/entities/triage-entry.entity';
 import { TriageLevel } from '../../domain/entities/triage-level.enum';
-import { v4 as uuidv4 } from 'uuid'; // Puedes instalarlo con: npm install uuid && npm install -D @types/uuid
+import { v4 as uuidv4 } from 'uuid';
 
 export class AddTriageCommand {
     constructor(

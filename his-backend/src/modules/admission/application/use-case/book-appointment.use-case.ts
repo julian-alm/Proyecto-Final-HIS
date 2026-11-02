@@ -21,10 +21,8 @@ export class BookAppointmentUseCase {
     ) {}
 
     async execute(command: BookAppointmentCommand): Promise<void> {
-        // Duración estándar de 30 minutos
         const endTime = new Date(command.startTime.getTime() + 30 * 60000);
 
-        // VALIDACIÓN: Verificar si hay superposición
         const isOccupied = await this.appointmentRepository.hasTimeConflict(
             command.doctorId, 
             command.startTime, 

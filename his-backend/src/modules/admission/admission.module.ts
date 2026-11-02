@@ -14,7 +14,8 @@ import { CheckInAppointmentUseCase } from './application/use-case/check-in-appoi
 import { CancelAppointmentUseCase } from './application/use-case/cancel-appointment.use-case';
 import { PromoteStandbyListener } from './application/listeners/promote-standby.listener';
 import { InsertEntreturnoUseCase } from './application/use-case/insert-entreturno.use-case';
-import { GetDoctorAgendaUseCase } from './application/use-case/get-doctor-agenda.use-case'
+import { GetDoctorAgendaUseCase } from './application/use-case/get-doctor-agenda.use-case';
+import { MoveToWaitingRoomUseCase, CompleteAppointmentUseCase, MoveToConsultingRoomUseCase } from './application/use-case/change-appointment-status.use-cases';
 import { IamModule } from '../iam/iam.module';
 
 @Module({
@@ -32,9 +33,12 @@ import { IamModule } from '../iam/iam.module';
         CancelAppointmentUseCase,
         PromoteStandbyListener,
         InsertEntreturnoUseCase,
+        MoveToWaitingRoomUseCase,
+        CompleteAppointmentUseCase,
+        MoveToConsultingRoomUseCase,
         {
             provide: IAppointmentRepository,
-            useClass: TypeOrmAppointmentRepository, // Inyección de Dependencias
+            useClass: TypeOrmAppointmentRepository,
         },
         { 
             provide: ITriageRepository, 

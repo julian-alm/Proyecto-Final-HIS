@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ConflictException } from '@nestjs/common';
 import { IAppointmentRepository } from '../../domain/ports/appointment.repository.port';
 import { DomainException } from '../../../../shared/domain/domain-exception';
 import { Appointment } from '../../domain/entities/appointment.entity';
@@ -30,10 +30,16 @@ export class InsertEntreturnoUseCase {
             throw new DomainException('No se encontró un turno programado previo para acortar en este horario.');
         }
 
-        // HU 1.2: Ajustar dinámicamente la duración del turno previo
+        const state = Reflect.get(previousAppointment, 'state') as { name?: string } | string;
+        const currentState = typeof state === 'string' ? state : state.name ?? '';
+        const invalidStates = ['EN_CONSULTORIO', 'ATENDIDO', 'CANCELADO'];
+        
+        if (invalidStates.includes(currentState as string)) {
+            throw new ConflictException(`No se puede insertar un entreturno porque el turno original está en estado ${currentState}.`);
+        }
+
         previousAppointment.endTime = command.startTime;
 
-        // Crear el entreturno (asumiendo 15 minutos de duración para la urgencia menor)
         const entreturnoEndTime = new Date(command.startTime.getTime() + 15 * 60000);
         
         const entreturno = new Appointment(
@@ -42,12 +48,11 @@ export class InsertEntreturnoUseCase {
             command.startTime,
             entreturnoEndTime,
             command.patientId,
-            new BookedState(), // Ingresa directamente como RESERVADO
+            new BookedState(),
             1,
-            true // isOverbooking = true (Etiqueta visual)
+            true
         );
 
-        // Persistir ambos cambios en la base de datos
         await this.appointmentRepository.save(previousAppointment);
         await this.appointmentRepository.save(entreturno);
     }

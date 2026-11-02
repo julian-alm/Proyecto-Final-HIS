@@ -10,8 +10,10 @@ import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 import { CancelAppointmentUseCase, CancelAppointmentCommand } from '../../application/use-case/cancel-appointment.use-case';
 import { InsertEntreturnoUseCase, InsertEntreturnoCommand } from '../../application/use-case/insert-entreturno.use-case';
 import { GetDoctorAgendaUseCase } from '../../application/use-case/get-doctor-agenda.use-case';
+import { MoveToWaitingRoomUseCase } from '../../application/use-case/change-appointment-status.use-cases';
+import { CompleteAppointmentUseCase } from '../../application/use-case/change-appointment-status.use-cases';
+import { MoveToConsultingRoomUseCase } from '../../application/use-case/change-appointment-status.use-cases';
 
-// DTO para validar la entrada (Puedes agregar class-validator luego)
 export class BookAppointmentDto {
     @IsString()
     @IsNotEmpty()
@@ -30,14 +32,14 @@ export class CreateAppointmentDto {
 
 export class AddTriageDto {
     @IsString() @IsNotEmpty() patientId: string;
-    @IsNotEmpty() level: number; // 1: Rojo, 2: Amarillo, 3: Verde
+    @IsNotEmpty() level: number;
     @IsString() @IsNotEmpty() symptoms: string;
 }
 
 export class InsertEntreturnoDto {
     @IsString() @IsNotEmpty() doctorId: string;
     @IsString() @IsNotEmpty() patientId: string;
-    @IsNotEmpty() startTime: string; // Recibe formato ISO (ej. "2026-10-25T10:15:00.000Z")
+    @IsNotEmpty() startTime: string;
 }
 
 @Controller('admission')
@@ -51,10 +53,13 @@ export class AdmissionController {
         private readonly cancelAppointmentUseCase: CancelAppointmentUseCase,
         private readonly insertEntreturnoUseCase: InsertEntreturnoUseCase,
         private readonly getDoctorAgendaUseCase: GetDoctorAgendaUseCase,
+        private readonly moveToWaitingRoomUseCase: MoveToWaitingRoomUseCase,
+        private readonly completeAppointmentUseCase: CompleteAppointmentUseCase,
+        private readonly moveToConsultingRoomUseCase: MoveToConsultingRoomUseCase,
     ) {}
 
     @Post('appointments')
-    @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST) // Ajusta según tu enum
+    @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
     async bookAppointment(@Body() dto: CreateAppointmentDto) {
     try {
         await this.bookAppointmentUseCase.execute(
@@ -81,7 +86,7 @@ export class AdmissionController {
     }
 
     @Post('triage')
-    @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.NURSE) // Enfermería también puede hacer triaje
+    @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.NURSE)
     async addToTriage(@Body() dto: AddTriageDto) {
         const entryId = await this.addTriageUseCase.execute(
             new AddTriageCommand(dto.patientId, dto.level, dto.symptoms)
@@ -90,7 +95,7 @@ export class AdmissionController {
     }
 
     @Post('triage/next')
-    @Roles(UserRole.ADMIN, UserRole.DOCTOR) // Solo el médico llama al siguiente paciente
+    @Roles(UserRole.ADMIN, UserRole.DOCTOR)
     async callNextPatient() {
         try {
             const patient = await this.getNextTriageUseCase.execute();
@@ -152,9 +157,30 @@ export class AdmissionController {
                 status: apt.statusName,
                 isOverbooking: apt.isOverbooking,
                 patientId: apt.patientId,
-                patientFullName: apt.patientFullName, // Nuevo
-                patientDni: apt.patientDni            // Nuevo
+                patientFullName: apt.patientFullName,
+                patientDni: apt.patientDni
             }))
         };
+    }
+
+    @Patch('appointments/:id/waiting-room')
+    @Roles(UserRole.RECEPTIONIST, UserRole.ADMIN, UserRole.NURSE)
+    async moveToWaitingRoom(@Param('id') id: string) {
+        await this.moveToWaitingRoomUseCase.execute(id);
+        return { message: 'Turno actualizado a EN_SALA_DE_ESPERA' };
+    }
+
+    @Patch('appointments/:id/complete')
+    @Roles(UserRole.DOCTOR, UserRole.ADMIN)
+    async completeAppointment(@Param('id') id: string) {
+        await this.completeAppointmentUseCase.execute(id);
+        return { message: 'Turno actualizado a ATENDIDO' };
+    }
+
+    @Patch('appointments/:id/consulting-room')
+    @Roles(UserRole.DOCTOR, UserRole.ADMIN)
+    async moveToConsultingRoom(@Param('id') id: string) {
+        await this.moveToConsultingRoomUseCase.execute(id);
+        return { message: 'Turno actualizado a EN_CONSULTORIO' };
     }
 }

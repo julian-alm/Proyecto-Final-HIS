@@ -25,12 +25,11 @@ export class TypeOrmTriageRepository implements ITriageRepository {
     }
 
     async getNextPatientToAttend(): Promise<TriageEntry | null> {
-        // MAGIA DE METODOLOGÍAS II: Ordenamiento compuesto (Prioridad Cola)
         const ormEntity = await this.ormRepository.findOne({
             where: { status: 'EN_ESPERA' },
             order: {
-            level: 'ASC',        // 1ro: Los rojos (1) antes que amarillos (2)
-            arrivalTime: 'ASC'   // 2do: El que llegó primero dentro del mismo color
+            level: 'ASC',
+            arrivalTime: 'ASC'
             }
         });
 

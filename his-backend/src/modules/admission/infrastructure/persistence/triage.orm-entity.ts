@@ -8,7 +8,7 @@ export class TriageOrmEntity {
     @Column()
     patientId: string;
 
-    @Column('int') // Se guarda como 1, 2 o 3
+    @Column('int')
     level: number;
 
     @Column()

@@ -20,7 +20,6 @@ export class CheckInAppointmentUseCase {
         throw new DomainException('Turno no encontrado.');
     }
 
-    // El objeto State valida si es posible. Si no, lanza la DomainException.
     appointment.checkInWaitingRoom();
 
     await this.appointmentRepository.save(appointment);

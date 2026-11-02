@@ -13,7 +13,7 @@ export class CancelAppointmentUseCase {
     constructor(
         @Inject(IAppointmentRepository)
         private readonly appointmentRepository: IAppointmentRepository,
-        private readonly eventEmitter: EventEmitter2 // Inyectamos el bus de eventos
+        private readonly eventEmitter: EventEmitter2
     ) {}
 
     async execute(command: CancelAppointmentCommand): Promise<void> {
@@ -23,13 +23,10 @@ export class CancelAppointmentUseCase {
             throw new DomainException('Turno no encontrado.');
         }
 
-        // 1. Ejecutar regla de negocio (La Máquina de Estados valida si se puede cancelar)
         appointment.cancel();
 
-        // 2. Guardar en base de datos
         await this.appointmentRepository.save(appointment);
 
-        // 3. ¡Publicar el evento para que otros módulos reaccionen!
         this.eventEmitter.emit(
             'appointment.cancelled',
             new AppointmentCancelledEvent(appointment.id, appointment.doctorId, appointment.startTime)
