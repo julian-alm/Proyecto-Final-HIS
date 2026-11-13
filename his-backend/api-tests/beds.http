@@ -1,0 +1,28 @@
+@baseUrl = http://localhost:3000
+@token_admin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+### 1. Asignar paciente a una cama
+PATCH {{baseUrl}}/beds/b3d12345-e89b-12d3-a456-426614174001/assign
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTIzNDc5MjUsImV4cCI6MTc5MjM3NjcyNX0.v4pAM_vV0_MXMXLKHWxL7zmYHmPejdz6rTrzhQsV9IA
+
+{
+    "patientId": "paciente-laura-gomez"
+}
+
+### 2. Dar de alta al paciente (Pasa de OCUPADAS -> EN_LIMPIEZA)
+PATCH {{baseUrl}}/beds/b3d12345-e89b-12d3-a456-426614174001/discharge
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiNjA1NmRjMi1jOWY3LTRmMTEtYWRkYy03MjMxM2VlMjRhNzgiLCJlbWFpbCI6ImdvbnphbGVzZGllZ29AaG9zcGl0YWwuY29tIiwicm9sZSI6IkRPQ1RPUiIsImZ1bGxOYW1lIjoiRGllZ28gR29uemFsZXMiLCJpYXQiOjE3OTIzNDk3MTIsImV4cCI6MTc5MjM3ODUxMn0.mCdHlbKC-3ELg1C4-igW7F8FLv3ZE0BHvtS-wRWwEb8
+
+### 3. Intentar asignar paciente mientras está EN_LIMPIEZA (Debe fallar con 409 Conflict)
+PATCH {{baseUrl}}/beds/b3d12345-e89b-12d3-a456-426614174001/assign
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTQ0Njc0YS00NWM1LTQ2ODEtODRhNi1lZWNlZTNjOTI2NmYiLCJlbWFpbCI6InJlY2VwY2lvbkBob3NwaXRhbC5jb20iLCJyb2xlIjoiUkVDRVBUSU9OSVNUIiwiZnVsbE5hbWUiOiJSZWNlcGNpb25pc3RhIEd1YXJkaWEiLCJpYXQiOjE3OTIzNDc5MjUsImV4cCI6MTc5MjM3NjcyNX0.v4pAM_vV0_MXMXLKHWxL7zmYHmPejdz6rTrzhQsV9IA
+
+{
+    "patientId": "paciente-intruso"
+}
+
+### 4. Personal de maestranza finaliza la limpieza (Pasa de EN_LIMPIEZA -> LIBRES)
+PATCH {{baseUrl}}/beds/b3d12345-e89b-12d3-a456-426614174001/clean
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDhiZjExYy01NWI3LTQ2Y2EtOGNlNC1kMjVjMjc2MDAyNDgiLCJlbWFpbCI6Imd1YWxkaWVyaWFndXN0aW5AaG9zcGl0YWwuY29tIiwicm9sZSI6IkNMRUFORVIiLCJmdWxsTmFtZSI6IkFndXN0aW4gR3VhbGRpZXJpIiwiaWF0IjoxNzkyMzUwMDI2LCJleHAiOjE3OTIzNzg4MjZ9.jJqr3KySCjykNosGG95MtjbJoOOR-Y4m-n4V2uxKIGI

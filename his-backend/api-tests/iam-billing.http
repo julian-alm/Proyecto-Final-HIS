@@ -1,0 +1,85 @@
+@baseUrl = http://localhost:3000
+
+### 1. Registrar al Enfermero Martín Torres (De la HU 1.1 de Enfermería)
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+    "fullName": "Martín Torres",
+    "email": "martin.torres@hospital.com",
+    "passwordPlain": "enfermeria123",
+    "role": "NURSE"
+}
+
+### 1.1 Registrar al Doctor Diego Gonzales
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+    "fullName": "Diego Gonzales",
+    "email": "gonzalesdiego@hospital.com",
+    "passwordPlain": "doctor123",
+    "role": "DOCTOR"
+}
+
+### 1.2 Registrar al Limpiador Agustin Gualdieri
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+    "fullName": "Agustin Gualdieri",
+    "email": "gualdieriagustin@hospital.com",
+    "passwordPlain": "limpiador123",
+    "role": "CLEANER"
+}
+
+### 2. Registrar un Recepcionista (Para Admisión)
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+    "fullName": "Recepcionista Guardia",
+    "email": "recepcion@hospital.com",
+    "passwordPlain": "recepcion123",
+    "role": "NURSE"
+}
+
+### 3. Hacer Login y obtener el JWT
+# @name loginNurse
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+    "email": "martin.torres@hospital.com",
+    "passwordPlain": "enfermeria123"
+}
+
+### 3.1 Hacer Login y obtener el JWT del Doctor
+# @name loginDoctor
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+    "email": "gonzalesdiego@hospital.com",
+    "passwordPlain": "doctor123"
+}
+
+### 3.2 Hacer Login y obtener el JWT del Cleaner
+# @name loginDoctor
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+    "email": "gualdieriagustin@hospital.com",
+    "passwordPlain": "limpiador123"
+}
+
+###
+# @name loginReceptionist
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+    "email": "recepcion@hospital.com",
+    "passwordPlain": "recepcion123"
+}
