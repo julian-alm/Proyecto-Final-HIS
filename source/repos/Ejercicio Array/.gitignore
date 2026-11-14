@@ -1,0 +1,30 @@
+# Archivos y carpetas de Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Archivos de configuración de VS Code
+.vscode/
+
+# Archivos de compilación
+bin/
+obj/
+Debug/
+Release/
+
+# Archivos de cache y logs
+*.log
+*.db
+*.futdcache.v2
+
+# Archivos de configuración locales
+*.config
+*.json
+
+# Archivos de test y temporales
+TestResults/
+*.tmp
+*.bak
+*.swp
