@@ -9,6 +9,8 @@ export class MedicalRecord {
     public progressNotes: { doctorId: string, note: string, date: Date }[],
     public readonly createdAt: Date,
     public updatedAt: Date,
+    // 👇 1. Agregamos el arreglo donde se van a guardar los protocolos generados
+    public careProtocols: any[] = [], 
   ) {}
 
   // --- COMPORTAMIENTOS DEL DOMINIO ---
@@ -32,6 +34,15 @@ export class MedicalRecord {
     this.updatedAt = new Date();
   }
 
+  // 👇 2. Método de dominio para inyectarle un protocolo nuevo a la HCE
+  public addCareProtocol(protocol: any): void {
+    if (!this.careProtocols) {
+      this.careProtocols = [];
+    }
+    this.careProtocols.push(protocol);
+    this.updatedAt = new Date(); // Actualizamos la fecha de modificación
+  }
+
   // Método para crear una Historia Clínica en blanco (cuando entra un paciente nuevo)
   public static create(patientId: string): MedicalRecord {
     return new MedicalRecord(
@@ -43,6 +54,7 @@ export class MedicalRecord {
       [], // Arranca sin notas médicas
       new Date(),
       new Date(),
+      [], // 👇 3. Inicializamos los protocolos vacíos al crear la HCE
     );
   }
 }

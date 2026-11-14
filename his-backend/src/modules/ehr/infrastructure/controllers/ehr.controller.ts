@@ -18,19 +18,19 @@ export class RegisterPatientDto {
 }
 
 @Controller('ehr')
-@UseGuards(RolesGuard) // Activamos la seguridad con JWT
+@UseGuards(RolesGuard)
 export class EhrController {
   constructor(
     private readonly createMedicalRecordUseCase: CreateMedicalRecordUseCase,
     private readonly addProgressNoteUseCase: AddProgressNoteUseCase,
-    private readonly getMedicalRecordUseCase: GetMedicalRecordUseCase, // <-- Lo inyectamos acá
+    private readonly getMedicalRecordUseCase: GetMedicalRecordUseCase,
     private readonly registerPatientUseCase: RegisterPatientUseCase,
     @Inject(IPatientRepository)
     private readonly patientRepository: IPatientRepository,
   ) {}
 
   @Post('patients')
-  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST) // El recepcionista registra pacientes
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
   async registerPatient(@Body() body: RegisterPatientDto) {
     const patientId = await this.registerPatientUseCase.execute(
       new RegisterPatientCommand(body.dni, body.firstName, body.lastName, body.coverageType as CoverageType)
@@ -38,9 +38,9 @@ export class EhrController {
     return { message: 'Paciente registrado exitosamente', patientId };
   }
 
-  // GET /ehr/patients/dni/:dni
   @Get('patients/dni/:dni')
-  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.DOCTOR, UserRole.NURSE)
+  // 👇 ACÁ ESTÁ EL CAMBIO: Agregado UserRole.PATIENT para que NestJS no bloquee la consulta
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.DOCTOR, UserRole.NURSE, UserRole.PATIENT)
   async getPatientByDni(@Param('dni') dni: string) {
     const patient = await this.patientRepository.findByDni(dni);
     if (!patient) {
@@ -49,10 +49,8 @@ export class EhrController {
     return patient;
   }
   
-  // 1. Ruta para CREAR el legajo vacío
-  // POST /ehr/:patientId
   @Post(':patientId')
-  @Roles(UserRole.RECEPTIONIST, UserRole.ADMIN) // Solo Recepcionistas o Admins pueden abrir legajos nuevos
+  @Roles(UserRole.RECEPTIONIST, UserRole.ADMIN, UserRole.DOCTOR) 
   async createRecord(@Param('patientId') patientId: string) {
     const record = await this.createMedicalRecordUseCase.execute(patientId);
     return { 
@@ -62,14 +60,12 @@ export class EhrController {
     };
   }
 
-  // 2. Ruta para AGREGAR una evolución médica
-  // POST /ehr/:patientId/progress-notes
-  @Roles(UserRole.DOCTOR) // Magia: Solo los Doctores pueden escribir evoluciones
+  @Roles(UserRole.DOCTOR)
   @Post(':patientId/progress-notes')
   async addProgressNote(
     @Param('patientId') patientId: string,
     @Body('note') note: string,
-    @Body('doctorId') doctorId: string, // <-- Lo recibimos directo del JSON
+    @Body('doctorId') doctorId: string, 
   ) {
     await this.addProgressNoteUseCase.execute({
       patientId,
@@ -83,10 +79,8 @@ export class EhrController {
     };
   }
 
-  // 3. Ruta para CONSULTAR la historia clínica completa
-  // GET /ehr/:patientId
   @Get(':patientId')
-  @Roles(UserRole.DOCTOR, UserRole.NURSE, UserRole.ADMIN)
+  @Roles(UserRole.DOCTOR, UserRole.NURSE, UserRole.ADMIN, UserRole.PATIENT)
   async getMedicalRecord(@Param('patientId') patientId: string) {
     const record = await this.getMedicalRecordUseCase.execute(patientId);
     return {

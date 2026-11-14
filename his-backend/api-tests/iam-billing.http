@@ -42,6 +42,93 @@ Content-Type: application/json
   "passwordPlain": "recepcion123"
 }
 
+### Registrar un Médico
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+  "fullName": "Dra. Ana Silva",
+  "email": "medico@hospital.com",
+  "passwordPlain": "medico123",
+  "role": "DOCTOR"
+}
+
+### Hacer Login Médico
+# @name loginDoctor
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+  "email": "medico@hospital.com",
+  "passwordPlain": "medico123"
+}
+
+### Registrar al nuevo médico (Dr. Roberto)
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+  "fullName": "Roberto Fernández",
+  "email": "roberto.fernandez@hospital.com",
+  "passwordPlain": "Doctor123",
+  "role": "DOCTOR"
+}
+
+### Asignar Carlos (11223344) al Dr. Roberto Fernández
+POST {{baseUrl}}/staff/doctors/ACA_VA_EL_ID_DEL_PERFIL_DE_ROBERTO/patients
+Authorization: Bearer ACA_VA_EL_TOKEN_DE_RECEPCION_O_ADMIN
+Content-Type: application/json
+
+{
+  "patientId": "11223344"
+}
+
+### Registrar a Ana Rojas (Paciente existente)
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+  "fullName": "Ana Rojas",
+  "email": "ana.rojas@hospital.com",
+  "passwordPlain": "ana123",
+  "role": "PATIENT"
+}
+
+### Hacer Login con Ana Rojas
+# @name loginAna
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+  "email": "ana.rojas@hospital.com",
+  "passwordPlain": "ana123"
+}
+
+
+### Registrar a Carlos Gómez (Paciente nuevo)
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+  "fullName": "Carlos Gómez",
+  "email": "carlos@hospital.com",
+  "passwordPlain": "carlos123",
+  "role": "PATIENT"
+}
+
+### Hacer Login con Carlos Gómez
+# @name loginCarlos
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+  "email": "carlos@hospital.com",
+  "passwordPlain": "carlos123"
+}
+
+
+
+
 ### ---pruebas billing module---
 
 ### ==========================================

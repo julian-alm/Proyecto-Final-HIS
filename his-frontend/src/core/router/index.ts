@@ -50,23 +50,23 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'inventory',
         name: 'Inventory',
-        component: () => import('../../modules/inventory/views/InventoryView.vue'),
+        component: () => import('../../modules/Inventory/views/InventoryView.vue'),
       },
       {
         path: 'nursing',
         name: 'Nursing',
-        redirect: '/billing',
+        component: () => import('../../modules/nursing/views/NursingDashboardView.vue'),
+      },
+      {
+        path: 'ehr/:id?',
+        name: 'EHR',
+        component: () => import('../../modules/ehr/views/MedicalRecordView.vue'),
       },
       {
         path: 'users',
         name: 'Users',
         component: () => import('../../modules/iam/views/RegisterUserView.vue'),
         meta: { roles: ['ADMIN'] },
-      },
-      {
-        path: 'inventory',
-        name: 'Inventory',
-        component: () => import('../../modules/inventory/views/InventoryView.vue'),
       },
     ],
   },
