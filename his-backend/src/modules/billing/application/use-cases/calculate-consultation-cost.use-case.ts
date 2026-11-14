@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Injectable, Inject } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { BillingStrategyFactory, CoverageType } from '../../domain/factories/billing-strategy.factory';
-import { ChargeOrmEntity } from '../../infrastructure/persistance/charge.orm-entity';
+import { IChargeRepository } from '../../domain/ports/charge.repository.port';
 
 export interface CalculateCostCommand {
   patientId: string;
@@ -14,15 +12,14 @@ export interface CalculateCostCommand {
 @Injectable()
 export class CalculateConsultationCostUseCase {
   constructor(
-    @InjectRepository(ChargeOrmEntity)
-    private readonly chargeRepo: Repository<ChargeOrmEntity>,
+    @Inject(IChargeRepository)
+    private readonly chargeRepo: IChargeRepository,
   ) {}
   
   async execute(command: CalculateCostCommand) {
     const strategy = BillingStrategyFactory.getStrategy(command.coverageType);
     const result = strategy.calculateCharges(command.consultationBaseCost);
 
-    // AHORA SÍ GUARDAMOS EN POSTGRESQL
     const charge = this.chargeRepo.create({
       id: randomUUID(),
       patientId: command.patientId,

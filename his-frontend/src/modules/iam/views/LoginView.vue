@@ -2,25 +2,21 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth.store';
+import LoginForm from '../components/LoginForm.vue'; // Importamos el nuevo componente
 
-// Inicializamos el router y el store de Pinia
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Variables reactivas
-const email = ref('');
-const password = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
 
-const handleLogin = async () => {
+// Recibe el payload emitido por el LoginForm
+const handleLogin = async (credentials: { email: string; passwordPlain: string }) => {
   try {
     errorMessage.value = '';
     isLoading.value = true;
     
-    await authStore.login(email.value, password.value);
-    
-    // El router index se encarga de redirigir según el rol
+    await authStore.login(credentials.email, credentials.passwordPlain);
     router.push('/');
     
   } catch (error: any) {
@@ -64,45 +60,19 @@ const handleLogin = async () => {
           <p>Ingresá tus credenciales para acceder al sistema</p>
         </div>
 
-        <form @submit.prevent="handleLogin" class="login-form">
-          
-          <div class="input-group">
-            <label for="email">Correo Electrónico</label>
-            <input 
-              id="email" 
-              v-model="email" 
-              type="email" 
-              placeholder="Ej. admin@hishospital.org" 
-              required 
-              :disabled="isLoading"
-            />
-          </div>
-
-          <div class="input-group">
-            <label for="password">Contraseña</label>
-            <input 
-              id="password" 
-              v-model="password" 
-              type="password" 
-              placeholder="••••••••" 
-              required 
-              :disabled="isLoading"
-            />
-          </div>
-
-          <!-- Feedback visual de error -->
-          <div v-if="errorMessage" class="alert alert-error">
-            {{ errorMessage }}
-          </div>
-
-          <button type="submit" :disabled="isLoading" class="btn-submit">
-            {{ isLoading ? 'Verificando...' : 'Ingresar al sistema' }}
-          </button>
-          
-        </form>
+        <!-- Instanciamos el componente y le pasamos los props y eventos -->
+        <LoginForm 
+          :is-loading="isLoading" 
+          :error-message="errorMessage"
+          @submit-login="handleLogin" 
+        />
         
         <div class="login-footer">
-          <p>¿Problemas para ingresar? Contactá a Soporte IT.</p>
+          <p class="register-prompt">
+            ¿Sos paciente y no tenés cuenta? 
+            <!-- Asumimos que la ruta de registro será /register -->
+            <RouterLink to="/register" class="register-link">Registrate acá</RouterLink>
+          </p>
         </div>
       </div>
     </div>
@@ -130,7 +100,6 @@ const handleLogin = async () => {
   overflow: hidden;
 }
 
-/* Patrón de fondo sutil simulado con gradientes */
 .brand-panel::before {
   content: '';
   position: absolute;
@@ -234,84 +203,6 @@ const handleLogin = async () => {
   font-size: 0.95rem;
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.input-group label {
-  font-weight: 600;
-  color: #334155;
-  font-size: 0.85rem;
-}
-
-.input-group input {
-  padding: 0.75rem 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #0f172a;
-  outline: none;
-  transition: all 0.2s;
-  background-color: white;
-}
-
-.input-group input::placeholder {
-  color: #94a3b8;
-}
-
-.input-group input:focus {
-  border-color: #0aa28a;
-  box-shadow: 0 0 0 3px rgba(10, 162, 138, 0.1);
-}
-
-.input-group input:disabled {
-  background-color: #f1f5f9;
-  cursor: not-allowed;
-  color: #94a3b8;
-}
-
-.btn-submit {
-  background-color: #0aa28a;
-  color: white;
-  border: none;
-  padding: 0.85rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 0.5rem;
-  box-shadow: 0 2px 4px rgba(10, 162, 138, 0.2);
-}
-
-.btn-submit:hover:not(:disabled) {
-  background-color: #088b76;
-}
-
-.btn-submit:disabled {
-  background-color: #cbd5e1;
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-.alert-error {
-  background-color: #fef2f2;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  border: 1px solid #fecaca;
-  font-weight: 500;
-}
-
 .login-footer {
   margin-top: 2rem;
   text-align: center;
@@ -325,16 +216,40 @@ const handleLogin = async () => {
   font-size: 0.85rem;
 }
 
-/* Responsividad para móviles */
 @media (max-width: 768px) {
   .login-layout {
     flex-direction: column;
   }
   .brand-panel {
-    display: none; /* Oculta el panel izquierdo en móviles para priorizar el login */
+    display: none;
   }
   .form-panel {
     padding: 1rem;
   }
+}
+
+.register-prompt {
+  margin: 0 0 1rem 0;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.register-link {
+  color: #0aa28a;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.register-link:hover {
+  color: #088b76;
+  text-decoration: underline;
+}
+
+.support-text {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
 }
 </style>

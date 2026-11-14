@@ -20,4 +20,9 @@ export class TypeOrmDoctorProfileRepository {
             }
         });
     }
+
+    async saveProfile(profileData: Partial<DoctorProfileOrmEntity>): Promise<DoctorProfileOrmEntity> {
+        const newProfile = this.ormRepository.create(profileData);
+        return await this.ormRepository.save(newProfile);
+    }
 }

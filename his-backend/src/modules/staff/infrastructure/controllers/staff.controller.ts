@@ -1,7 +1,8 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { TypeOrmDoctorProfileRepository } from '../persistence/typeorm-doctor-profile.repository';
 import { RolesGuard, Roles } from '../../../iam/infrastructure/guards/roles.guard';
 import { UserRole } from '../../../iam/domain/entities/user-role.enum';
+import { v4 as uuidv4 } from 'uuid';
 
 @Controller('staff')
 @UseGuards(RolesGuard)
@@ -18,5 +19,21 @@ export class StaffController {
             status: 'success',
             data: doctors
         };
+    }
+
+    // NUEVO ENDPOINT: Recibe el ID del usuario recién creado junto con sus datos médicos
+    @Post('doctor-profile')
+    @Roles(UserRole.ADMIN)
+    async createDoctorProfile(@Body() body: { userId: string; licenseNumber: string; specialty: string }) {
+        const profile = {
+            id: uuidv4(),
+            userId: body.userId,
+            licenseNumber: body.licenseNumber,
+            specialty: body.specialty
+        };
+        
+        await this.doctorProfileRepository.saveProfile(profile);
+        
+        return { message: 'Perfil de doctor creado exitosamente', data: profile };
     }
 }

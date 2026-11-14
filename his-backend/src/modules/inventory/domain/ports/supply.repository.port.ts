@@ -5,8 +5,8 @@ export const ISupplyRepository = Symbol('ISupplyRepository');
 
 export interface ISupplyRepository {
     findByName(name: string): Promise<MedicalSupply | null>;
-    save(supply: MedicalSupply): Promise<void>;
-    decrementStockAtomically(name: string, quantity: number): Promise<MedicalSupply>;
+    save(supply: MedicalSupply, reason?: string): Promise<void>;
+    decrementStockAtomically(name: string, quantity: number, reason?: string): Promise<MedicalSupply>;
     getMovementHistory(): Promise<SupplyMovementOrmEntity[]>;
     getCurrentStock(): Promise<{ medicationName: string; currentStock: number }[]>;   
 }

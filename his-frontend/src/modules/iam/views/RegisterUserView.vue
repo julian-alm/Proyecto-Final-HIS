@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
 import { iamService } from '../services/iam.service';
+import { apiClient } from '../../../core/api/axios.client';
 import type { RegisterUserPayload } from '../types/auth.types';
 
-const form = reactive<RegisterUserPayload>({
+const form = reactive({
   fullName: '',
   email: '',
   passwordPlain: '',
   role: '',
+  // Nuevos campos exclusivos para doctores
+  licenseNumber: '',
+  specialty: ''
 });
 
 const isLoading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 
-// Estado para la lista real de usuarios
 const usersList = ref<any[]>([]);
 const loadingUsers = ref(false);
 
@@ -29,7 +32,6 @@ const loadUsers = async () => {
   }
 };
 
-// Cargamos los usuarios apenas entra a la pantalla
 onMounted(() => loadUsers());
 
 const handleRegister = async () => {
@@ -43,16 +45,34 @@ const handleRegister = async () => {
 
   try {
     isLoading.value = true;
-    await iamService.registerUser({ ...form });
+    
+    // 1. Registramos el usuario en IAM y guardamos la respuesta (que trae el ID generado)
+    const newUser = await iamService.registerUser({ 
+      fullName: form.fullName,
+      email: form.email,
+      passwordPlain: form.passwordPlain,
+      role: form.role
+    });
+
+    // 2. Si es DOCTOR, hacemos la segunda petición para guardar su perfil
+    if (form.role === 'DOCTOR') {
+      await apiClient.post('/staff/doctor-profile', {
+        userId: newUser.id, // El ID devuelto por tu use-case
+        licenseNumber: form.licenseNumber,
+        specialty: form.specialty
+      });
+    }
 
     successMessage.value = `¡Usuario "${form.fullName}" registrado exitosamente!`;
 
+    // Limpiar formulario
     form.fullName = '';
     form.email = '';
     form.passwordPlain = '';
     form.role = '';
+    form.licenseNumber = '';
+    form.specialty = '';
 
-    // Recargamos la lista automáticamente para ver al nuevo usuario
     await loadUsers();
     
   } catch (error: any) {
@@ -65,7 +85,6 @@ const handleRegister = async () => {
   }
 };
 
-// --- Utilidades de formato para la tabla ---
 const getInitials = (name?: string) => {
   if (!name) return 'US';
   const parts = name.trim().split(' ');
@@ -84,7 +103,6 @@ const formatRole = (role: string) => {
   return roles[role] || role;
 };
 
-// Convierte el isActive (booleano) al texto y clase correctos
 const getStatusText = (isActive: boolean) => isActive ? 'Activo' : 'Inactivo';
 const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-inactive';
 </script>
@@ -106,40 +124,18 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
           
           <div class="form-group">
             <label for="fullName">Nombre completo</label>
-            <input
-              id="fullName"
-              v-model.trim="form.fullName"
-              type="text"
-              placeholder="Ej. Dra. Lucía Fernández"
-              required
-              :disabled="isLoading"
-            />
+            <input id="fullName" v-model.trim="form.fullName" type="text" placeholder="Ej. Dra. Lucía Fernández" required :disabled="isLoading"/>
           </div>
 
           <div class="form-group">
             <label for="email">Correo electrónico institucional</label>
-            <input
-              id="email"
-              v-model.trim="form.email"
-              type="email"
-              placeholder="usuario@hishospital.org"
-              required
-              :disabled="isLoading"
-            />
+            <input id="email" v-model.trim="form.email" type="email" placeholder="usuario@hishospital.org" required :disabled="isLoading"/>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label for="password">Contraseña temporal</label>
-              <input
-                id="password"
-                v-model="form.passwordPlain"
-                type="password"
-                placeholder="••••••••"
-                minlength="6"
-                required
-                :disabled="isLoading"
-              />
+              <input id="password" v-model="form.passwordPlain" type="password" placeholder="••••••••" minlength="6" required :disabled="isLoading"/>
               <span class="input-hint">El usuario deberá cambiarla al ingresar</span>
             </div>
 
@@ -151,19 +147,25 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
                 <option value="NURSE">Enfermero/a</option>
                 <option value="RECEPTIONIST">Recepcionista</option>
                 <option value="ADMIN">Administrador (ADMIN)</option>
-                <!-- Corregido el nombre a Personal de Limpieza -->
                 <option value="CLEANER">Personal de Limpieza</option>
               </select>
             </div>
           </div>
 
-          <div v-if="errorMessage" class="alert alert-error mt-1">
-            {{ errorMessage }}
+          <!-- NUEVO: Aparece solo si se selecciona DOCTOR -->
+          <div v-if="form.role === 'DOCTOR'" class="form-row mt-1 slide-down">
+            <div class="form-group">
+              <label for="license">Matrícula (License Number)</label>
+              <input id="license" v-model.trim="form.licenseNumber" type="text" placeholder="Ej. MP 12345" required :disabled="isLoading"/>
+            </div>
+            <div class="form-group">
+              <label for="specialty">Especialidad</label>
+              <input id="specialty" v-model.trim="form.specialty" type="text" placeholder="Ej. Cardiología" required :disabled="isLoading"/>
+            </div>
           </div>
 
-          <div v-if="successMessage" class="alert alert-success mt-1">
-            {{ successMessage }}
-          </div>
+          <div v-if="errorMessage" class="alert alert-error mt-1">{{ errorMessage }}</div>
+          <div v-if="successMessage" class="alert alert-success mt-1">{{ successMessage }}</div>
 
           <button type="submit" class="btn btn-teal mt-1" :disabled="isLoading">
             {{ isLoading ? 'Procesando...' : '+ Registrar Usuario' }}
@@ -175,7 +177,6 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
       <div class="card list-card">
         <div class="list-header">
           <h2>Personal registrado</h2>
-          <!-- Contador real conectado a la variable usersList -->
           <span class="badge-count">— {{ usersList.length }} usuarios</span>
         </div>
 
@@ -191,7 +192,6 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
               </tr>
             </thead>
             <tbody>
-              <!-- Iteramos sobre los datos reales de la BD -->
               <tr v-for="(user, index) in usersList" :key="user.id">
                 <td>
                   <div class="user-info">
@@ -207,7 +207,6 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
                 </td>
                 <td>
                   <span class="status-indicator">
-                    <!-- Conectado al atributo booleano isActive de la BD -->
                     <div class="dot" :class="getStatusClass(user.isActive)"></div>
                     {{ getStatusText(user.isActive) }}
                   </span>
@@ -225,148 +224,65 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
 </template>
 
 <style scoped>
-/* Tipografía y layout general */
-.register-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #0f172a;
+/* Estilos intactos, agregada solo la animación slide-down */
+.slide-down { animation: slideDown 0.3s ease-out; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
+/* Resto de tu CSS original */
+.register-page { max-width: 1200px; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #0f172a; }
 .breadcrumb { font-size: 0.8rem; color: #94a3b8; font-weight: 500; display: block; margin-bottom: 0.25rem; }
 .page-header { margin-bottom: 2rem; }
 .page-header h1 { margin: 0 0 0.2rem 0; font-size: 1.4rem; font-weight: 700; color: #0f172a; }
 .page-header p { margin: 0; color: #64748b; font-size: 0.9rem; }
-
-/* Grid de Pantalla Dividida */
-.iam-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .iam-grid {
-    grid-template-columns: 1.1fr 1fr; /* Formulario un poco más ancho que la lista */
-    align-items: start;
-  }
-}
-
-/* Tarjetas (Cards) */
-.card {
-  background: #ffffff;
-  padding: 1.75rem;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.card h2 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-/* Formulario */
+.iam-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+@media (min-width: 1024px) { .iam-grid { grid-template-columns: 1.1fr 1fr; align-items: start; } }
+.card { background: #ffffff; padding: 1.75rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03); }
+.card h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
 .register-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-group label { font-size: 0.85rem; font-weight: 600; color: #334155; }
 .input-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; }
-
-input, select {
-  padding: 0.7rem 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: #0f172a;
-  outline: none;
-  transition: border-color 0.2s;
-  background-color: white;
-}
+input, select { padding: 0.7rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; color: #0f172a; outline: none; transition: border-color 0.2s; background-color: white; }
 input:focus, select:focus { border-color: #0aa28a; box-shadow: 0 0 0 3px rgba(10, 162, 138, 0.1); }
 input:disabled, select:disabled { background-color: #f8fafc; color: #94a3b8; }
 input::placeholder { color: #94a3b8; }
-
-/* Botones */
-.btn {
-  border: none;
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  width: 100%;
-}
+.btn { border: none; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; width: 100%; }
 .btn-teal { background-color: #0aa28a; color: white; }
 .btn-teal:hover:not(:disabled) { background-color: #088b76; }
 .btn-teal:disabled { background-color: #cbd5e1; cursor: not-allowed; }
-
-/* Utilidades */
 .mt-1 { margin-top: 1rem; }
 .text-center { text-align: center; }
 .text-muted { color: #94a3b8; }
 .py-2 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-
-/* Alertas y Estados */
 .alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; }
 .alert-error { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 .loading-state { text-align: center; color: #94a3b8; padding: 2rem; font-size: 0.9rem; }
-
-/* --- PANEL DERECHO (Lista de Personal) --- */
-.list-header {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-}
+.list-header { display: flex; align-items: baseline; gap: 0.5rem; }
 .badge-count { font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
-
 .table-responsive { overflow-x: auto; width: 100%; }
 .clean-table { width: 100%; border-collapse: collapse; }
-.clean-table th, .clean-table td {
-  padding: 1rem 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid #f1f5f9;
-}
-.clean-table th {
-  color: #94a3b8;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+.clean-table th, .clean-table td { padding: 1rem 0.5rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+.clean-table th { color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .clean-table tbody tr:last-child td { border-bottom: none; }
-
-/* Perfiles de usuario en tabla */
 .user-info { display: flex; align-items: center; gap: 0.75rem; }
-.avatar {
-  width: 36px; height: 36px;
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.85rem; font-weight: 700;
-}
-.avatar-1 { background-color: #eff6ff; color: #2563eb; } /* Azul */
-.avatar-2 { background-color: #ecfdf5; color: #059669; } /* Verde */
-.avatar-3 { background-color: #fffbeb; color: #d97706; } /* Naranja */
-
+.avatar { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; }
+.avatar-1 { background-color: #eff6ff; color: #2563eb; }
+.avatar-2 { background-color: #ecfdf5; color: #059669; }
+.avatar-3 { background-color: #fffbeb; color: #d97706; }
 .user-details { display: flex; flex-direction: column; }
 .user-details strong { font-size: 0.9rem; color: #0f172a; font-weight: 600; }
 .user-details span { font-size: 0.75rem; color: #64748b; }
-
-/* Roles y Estados */
 .role-text { font-size: 0.85rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 20px; }
-.role-1 { color: #2563eb; } /* Azul */
-.role-2 { color: #059669; } /* Verde */
-.role-3 { color: #64748b; } /* Gris */
-
-.status-indicator {
-  display: flex; align-items: center; gap: 0.4rem;
-  font-size: 0.85rem; font-weight: 500; color: #334155;
-}
+.role-1 { color: #2563eb; }
+.role-2 { color: #059669; }
+.role-3 { color: #64748b; }
+.status-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 500; color: #334155; }
 .dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot-active { background-color: #10b981; } /* Verde para true */
-.dot-inactive { background-color: #ef4444; } /* Rojo para false */
+.dot-active { background-color: #10b981; }
+.dot-inactive { background-color: #ef4444; }
 </style>
