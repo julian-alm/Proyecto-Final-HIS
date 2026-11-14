@@ -6,7 +6,6 @@ describe('ChangeAppointmentStatus Use Cases', () => {
     let mockRepository: jest.Mocked<IAppointmentRepository>;
 
     beforeEach(() => {
-        // 1. ARRANGE GLOBAL: Configuramos el Mock (Test Double) aislando la base de datos
         mockRepository = {
             updateStatus: jest.fn(),
             findById: jest.fn(),
@@ -27,7 +26,7 @@ describe('ChangeAppointmentStatus Use Cases', () => {
             // 2. ACT
             await useCase.execute(appointmentId);
 
-            // 3. ASSERT: Verificamos que se llamó a la función exacta con los parámetros correctos
+            // 3. ASSERT
             expect(mockRepository.updateStatus).toHaveBeenCalledWith(appointmentId, 'EN_SALA_DE_ESPERA');
             expect(mockRepository.updateStatus).toHaveBeenCalledTimes(1);
         });

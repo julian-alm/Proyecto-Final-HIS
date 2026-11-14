@@ -32,13 +32,11 @@ describe('DoctorAgendaView.vue', () => {
             }
         });
 
-        // CLAVE: Instanciamos Pinia y configuramos el usuario ANTES de montar el componente
         const testingPinia = createPinia();
         const authStore = useAuthStore(testingPinia);
         authStore.userId = 'doctor-1';
         authStore.userFullName = 'Dr. House';
 
-        // Ahora montamos el componente, que ya tendrá acceso al ID del doctor en su onMounted
         const wrapper = mount(DoctorAgendaView, {
             global: { plugins: [testingPinia] }
         });
@@ -67,7 +65,6 @@ describe('DoctorAgendaView.vue', () => {
         });
         (AdmissionService.completeAppointment as any).mockResolvedValue({});
 
-        // Configuramos Pinia ANTES de montar
         const testingPinia = createPinia();
         const authStore = useAuthStore(testingPinia);
         authStore.userId = 'doctor-1';

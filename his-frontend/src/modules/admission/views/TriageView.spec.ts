@@ -41,7 +41,6 @@ describe('TriageView.vue', () => {
         // 3. ASSERT
         expect(AdmissionService.getPatientByDni).toHaveBeenCalledWith('12345678');
         expect(wrapper.text()).toContain('Juan Perez');
-        // Verificamos que la clase disabled-grid desaparezca al encontrar al paciente
         expect(wrapper.find('.forms-grid').classes()).not.toContain('disabled-grid');
     });
 
@@ -56,7 +55,6 @@ describe('TriageView.vue', () => {
         const wrapper = mount(TriageView);
         await flushPromises();
 
-        // Act - Buscamos paciente
         await wrapper.find('.search-bar input').setValue('12345678');
         await wrapper.find('.btn-search').trigger('click');
         await flushPromises();
@@ -66,7 +64,6 @@ describe('TriageView.vue', () => {
         await wrapper.find('input[type="date"]').setValue('2026-11-20');
         await wrapper.find('input[type="time"]').setValue('10:00');
 
-        // Forzamos el envío del formulario de turnos
         await wrapper.findAll('form')[0].trigger('submit');
         await flushPromises();
 
@@ -90,7 +87,6 @@ describe('TriageView.vue', () => {
         await flushPromises();
 
         // 2. ACT
-        // Seleccionamos de forma resiliente usando la clase del panel contenedor
         const triageForm = wrapper.find('.triage-panel form');
 
         await triageForm.find('input').setValue('Dolor de pecho');

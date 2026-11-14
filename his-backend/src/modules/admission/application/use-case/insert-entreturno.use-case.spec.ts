@@ -13,7 +13,6 @@ describe('InsertEntreturnoUseCase', () => {
         mockRepository = {
             findPrevious: jest.fn(),
             save: jest.fn(),
-            // Las demás funciones deben estar declaradas como jest.fn() para satisfacer la interfaz
             findById: jest.fn(),
             findByDoctorId: jest.fn(),
             hasTimeConflict: jest.fn(),

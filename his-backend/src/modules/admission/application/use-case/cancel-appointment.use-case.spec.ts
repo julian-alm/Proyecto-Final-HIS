@@ -11,7 +11,6 @@ describe('CancelAppointmentUseCase', () => {
     let mockEventEmitter: jest.Mocked<EventEmitter2>;
 
     beforeEach(() => {
-        // Configuramos el Mock del repositorio
         mockRepository = {
             findById: jest.fn(),
             save: jest.fn(),
@@ -21,12 +20,10 @@ describe('CancelAppointmentUseCase', () => {
             hasTimeConflict: jest.fn(),
         } as unknown as jest.Mocked<IAppointmentRepository>;
 
-        // Configuramos el Mock del emisor de eventos
         mockEventEmitter = {
             emit: jest.fn(),
         } as unknown as jest.Mocked<EventEmitter2>;
 
-        // Inyectamos ambos mocks en el Caso de Uso
         useCase = new CancelAppointmentUseCase(mockRepository, mockEventEmitter);
     });
 
@@ -35,7 +32,6 @@ describe('CancelAppointmentUseCase', () => {
         const appointmentId = 'b6056dc2-c9f7-4f11-addc-72313ee24a00';
         const command = new CancelAppointmentCommand(appointmentId);
 
-        // Preparamos la entidad de dominio con un estado válido
         const existingAppointment = new Appointment(
             appointmentId, 'doc-1', new Date(), new Date(), 'pat-1', new BookedState(), 1, false
         );
@@ -47,11 +43,9 @@ describe('CancelAppointmentUseCase', () => {
         await useCase.execute(command);
 
         // 3. ASSERT (Afirmar)
-        // Validamos que el repositorio intentó guardar la entidad que acabamos de mutar
         expect(mockRepository.save).toHaveBeenCalledWith(existingAppointment);
         expect(mockRepository.save).toHaveBeenCalledTimes(1);
 
-        // Validamos que se emitió el evento al sistema
         expect(mockEventEmitter.emit).toHaveBeenCalledWith(
             'appointment.cancelled',
             expect.any(Object)
