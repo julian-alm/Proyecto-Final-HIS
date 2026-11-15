@@ -33,3 +33,15 @@ export class RespiratoryProtocolBuilder implements ICareProtocolBuilder {
         return new CareProtocol(patientId, 'INGRESO_INFECCION_RESPIRATORIA', tasks, true);
     }
 }
+
+// Builder Concreto 3: Cuadro Febril
+export class FeverProtocolBuilder implements ICareProtocolBuilder {
+    buildForPatient(patientId: string): CareProtocol {
+        const tasks = [
+            'Control de temperatura cada 1 hora',
+            'Administrar antitérmicos (ej: Paracetamol) según prescripción',
+            'Mantener hidratación adecuada y control de líquidos'
+        ];
+        return new CareProtocol(patientId, 'INGRESO_FIEBRE', tasks, false);
+    }
+}

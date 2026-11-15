@@ -22,6 +22,10 @@ export class MedicalRecordOrmEntity {
   @Column({ name: 'progress_notes', type: 'jsonb', default: [] })
   progressNotes: { doctorId: string; note: string; date: Date }[];
 
+  // 👇 AGREGAMOS LA COLUMNA PARA LOS PROTOCOLOS ACÁ
+  @Column({ name: 'care_protocols', type: 'jsonb', default: [] })
+  careProtocols: any[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

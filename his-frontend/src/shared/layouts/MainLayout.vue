@@ -71,11 +71,20 @@
         </router-link>
 
         <router-link 
-          v-if="['ADMIN', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
+          v-if="['ADMIN', 'NURSE'].includes(authStore.userRole || '')" 
           to="/nursing" 
           class="nav-item">
           <span class="material-symbols-rounded nav-icon">medical_services</span>
-          Enfermería y HCE
+          Panel de Enfermería
+        </router-link>
+
+        <!-- 👇 ACÁ ESTÁ EL CAMBIO: Agregamos PATIENT y le cambiamos el texto dinámicamente -->
+        <router-link 
+          v-if="['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT'].includes(authStore.userRole || '')" 
+          to="/ehr" 
+          class="nav-item">
+          <span class="material-symbols-rounded nav-icon">description</span>
+          {{ authStore.userRole === 'PATIENT' ? 'Mi Historia Clínica' : 'Historia Clínica (HCE)' }}
         </router-link>
 
         <router-link 
@@ -137,6 +146,7 @@ const getInitials = (name?: string | null) => {
   flex-direction: column;
   padding: 1.5rem;
   box-sizing: border-box;
+  overflow-y: auto; 
 }
 
 .brand {

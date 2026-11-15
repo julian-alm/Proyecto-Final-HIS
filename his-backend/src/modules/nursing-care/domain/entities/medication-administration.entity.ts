@@ -5,6 +5,7 @@ export class MedicationAdministration {
     public readonly nurseId: string,
     public readonly medicationName: string,
     public readonly dose: string,
+    public readonly quantity: number,
     public readonly scheduledTime: Date,
     public readonly administeredTime: Date,
     public status: 'ADMINISTRADA' | 'FUERA_DE_TERMINO' = 'ADMINISTRADA'

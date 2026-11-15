@@ -21,6 +21,8 @@ export class TypeOrmMedicalRecordRepository implements IMedicalRecordRepository 
       allergies: record.allergies,
       chronicConditions: record.chronicConditions,
       progressNotes: record.progressNotes,
+      // 👇 1. LO AGREGAMOS PARA QUE SE GUARDE EN LA BASE DE DATOS
+      careProtocols: record.careProtocols,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     });
@@ -45,6 +47,8 @@ export class TypeOrmMedicalRecordRepository implements IMedicalRecordRepository 
       ormEntity.progressNotes,
       ormEntity.createdAt,
       ormEntity.updatedAt,
+      // 👇 2. LO AGREGAMOS PARA QUE SE MANDE AL FRONTEND
+      ormEntity.careProtocols,
     );
   }
 }
