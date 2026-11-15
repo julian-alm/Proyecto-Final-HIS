@@ -17,7 +17,7 @@ const getDefaultRouteByRole = (role: string | null): string => {
     case 'CLEANER':
       return '/beds';
     case 'PATIENT':
-      return '/my-history'; // Ruta para el historial médico (la arman después)
+      return '/ehr'; // Redirige a la historia clínica final
     default:
       return '/login';
   }
@@ -74,30 +74,27 @@ const routes: Array<RouteRecordRaw> = [
         path: 'beds',
         name: 'Beds',
         component: () => import('../../modules/beds/views/BedManagementView.vue'),
-      },
-      {
-        path: 'nursing',
-        name: 'Nursing',
-        // Ojo acá: cuando creen la vista de enfermería, cambien este redirect por el import()
-        redirect: '/billing', 
-      },
-      {
-        path: 'users',
-        name: 'Users',
-        component: () => import('../../modules/iam/views/RegisterUserView.vue'),
-        meta: { roles: ['ADMIN'] },
-      },
+      }, 
       {
         path: 'inventory',
         name: 'Inventory',
         component: () => import('../../modules/Inventory/views/InventoryView.vue'),
       },
       {
-        // RUTA TEMPORAL PARA EL PACIENTE
-        path: 'my-history',
-        name: 'PatientHistory',
-        // Por ahora lo mandamos a un div vacío o a otra vista segura hasta que armen la historia clínica
-        component: () => import('../../modules/iam/views/RegisterUserView.vue'), 
+        path: 'nursing',
+        name: 'Nursing',
+        component: () => import('../../modules/nursing/views/NursingDashboardView.vue'),
+      },
+      {
+        path: 'ehr/:id?',
+        name: 'EHR',
+        component: () => import('../../modules/ehr/views/MedicalRecordView.vue'),
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('../../modules/iam/views/RegisterUserView.vue'),
+        meta: { roles: ['ADMIN'] },
       }
     ],
   },

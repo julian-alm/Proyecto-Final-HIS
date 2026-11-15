@@ -14,13 +14,17 @@ import { IMedicationAdministrationRepository } from './domain/ports/medication-a
 import { TypeOrmMedicationAdministrationRepository } from './infrastructure/persistence/typeorm-medication-administration.repository';
 import { IamModule } from '../iam/iam.module';
 
+// 👇 ACÁ ESTÁ EL CAMBIO: Importamos el EhrModule (verificá que la ruta sea correcta)
+import { EhrModule } from '../ehr/ehr.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       VitalSignsOrmEntity,
       MedicationAdministrationOrmEntity,
     ]),
-    IamModule, // <--- Los módulos van acá en IMPORTS 
+    IamModule,
+    EhrModule, // 👇 ACÁ ESTÁ EL CAMBIO: Lo agregamos al arreglo de imports
   ],
   controllers: [NursingCareController],
   providers: [

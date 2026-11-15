@@ -13,13 +13,12 @@ import { GetMedicalRecordUseCase } from './application/use-cases/get-medical-rec
 import { RegisterPatientUseCase } from './application/use-cases/register-patient.use-case';
 import { PatientOrmEntity } from '../ehr/infrastructure/persistence/patient.orm-entity';
 
-// 1. Importá tu módulo IAM
+// Importá tu módulo IAM
 import { IamModule } from '../iam/iam.module'; 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([MedicalRecordOrmEntity, PatientOrmEntity,]),
-    // 2. Agregalo acá para que el Guard pueda usar el JwtService
+    TypeOrmModule.forFeature([MedicalRecordOrmEntity, PatientOrmEntity]),
     IamModule, 
   ],
   controllers: [
@@ -28,7 +27,7 @@ import { IamModule } from '../iam/iam.module';
   providers: [
     CreateMedicalRecordUseCase,
     AddProgressNoteUseCase,
-    GetMedicalRecordUseCase, // <-- Agregalo acá
+    GetMedicalRecordUseCase, 
     VitalSignsListener,
     RegisterPatientUseCase,
     {
@@ -40,6 +39,7 @@ import { IamModule } from '../iam/iam.module';
       useClass: TypeOrmPatientRepository 
     },
   ],
-  exports: [IPatientRepository],
+  // 👇 ACÁ ESTÁ EL CAMBIO: Exportamos también IMedicalRecordRepository
+  exports: [IPatientRepository, IMedicalRecordRepository],
 })
 export class EhrModule {}

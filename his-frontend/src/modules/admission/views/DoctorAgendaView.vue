@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { AdmissionService } from '../services/admission.service';
 import { useAuthStore } from '../../iam/store/auth.store';
 import ToastAlert from '../../../shared/components/ToastAlert.vue';
 
 const authStore = useAuthStore();
+const router = useRouter();
+
 const agenda = ref<any[]>([]);
+const assignedPatients = ref<any[]>([]);
 const isLoading = ref(true);
+const isLoadingPatients = ref(true);
 const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
 let refreshInterval: ReturnType<typeof setInterval>;
 
@@ -35,8 +40,24 @@ const fetchAgenda = async () => {
   }
 };
 
+const fetchAssignedPatients = async () => {
+  try {
+    const response = await AdmissionService.getAssignedPatients();
+    
+    // Esta línea saca los datos limpios vengan como vengan de Axios
+    const resultado = response.data || response;
+    assignedPatients.value = resultado.data || resultado;
+    
+  } catch (error) {
+    console.error('Error al cargar pacientes vinculados', error);
+  } finally {
+    isLoadingPatients.value = false;
+  }
+};
+
 onMounted(() => {
   fetchAgenda();
+  fetchAssignedPatients();
   refreshInterval = setInterval(() => {
     fetchAgenda();
   }, 30000);
@@ -91,16 +112,21 @@ const formatTime = (dateString: string) => {
     minute: '2-digit' 
   });
 };
+
+const goToHCE = (dni: string) => {
+  router.push(`/hce/${dni}`);
+};
 </script>
 
 <template>
   <div class="doctor-agenda-container">
     <header class="agenda-header">
-      <h1>Mi Agenda del Día</h1>
+      <h1>Mi Panel de Control</h1>
       <p class="subtitle">Dr/a. {{ authStore.userFullName }}</p>
     </header>
 
-    <section class="panel">
+    <section class="panel mb-4">
+      <h2>Turnos de Hoy</h2>
       <div v-if="isLoading" class="loading-state">Cargando turnos...</div>
       
       <table v-else class="agenda-table">
@@ -154,6 +180,29 @@ const formatTime = (dateString: string) => {
       </table>
     </section>
 
+    <section class="panel">
+      <h2>Mis Pacientes Asignados</h2>
+      <p class="text-muted" style="margin-bottom: 15px;">Listado de pacientes vinculados para acceso a Historia Clínica.</p>
+      
+      <div v-if="isLoadingPatients" class="loading-state">Cargando pacientes...</div>
+      
+      <table v-else class="agenda-table">
+        <thead>
+          <tr>
+            <th>DNI / Identificación</th>
+          </tr>
+        </thead>
+       <tbody>
+          <tr v-for="paciente in assignedPatients" :key="paciente.dni">
+            <td><strong>{{ paciente.dni }} - {{ paciente.lastName }}, {{ paciente.firstName }}</strong></td>
+          </tr>
+          <tr v-if="assignedPatients.length === 0">
+            <td class="empty-state">No tienes pacientes asignados por el momento.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
     <Transition name="fade">
       <div v-if="showConfirmModal" class="modal-overlay">
         <div class="modal-content">
@@ -176,8 +225,11 @@ const formatTime = (dateString: string) => {
 .agenda-header { margin-bottom: 20px; }
 .agenda-header h1 { color: #2c3e50; margin-bottom: 5px; }
 .subtitle { color: #7f8c8d; font-size: 1.1em; margin-top: 0; }
+.mb-4 { margin-bottom: 30px; }
 
 .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.panel h2 { margin-top: 0; color: #2c3e50; font-size: 1.3rem; margin-bottom: 15px; }
+
 .agenda-table { width: 100%; border-collapse: collapse; }
 .agenda-table th { background-color: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; color: #34495e; }
 .agenda-table td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; transition: background-color 0.3s; }
@@ -195,11 +247,13 @@ const formatTime = (dateString: string) => {
 .btn-call:hover { background: #2980b9; }
 .btn-finish { background: #0aa28a; }
 .btn-finish:hover { background: #08836f; }
+.btn-hce { background: #2c3e50; }
+.btn-hce:hover { background: #1a252f; }
+
 .text-muted { color: #7f8c8d; font-style: italic; }
 .empty-state { text-align: center; padding: 30px; color: #7f8c8d; font-style: italic; }
 .loading-state { text-align: center; padding: 20px; color: #3498db; }
 
-/* Estilos del Modal de Confirmación */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { background: white; padding: 25px; border-radius: 8px; max-width: 400px; width: 90%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); text-align: center; }
 .modal-content h3 { margin-top: 0; color: #2c3e50; }

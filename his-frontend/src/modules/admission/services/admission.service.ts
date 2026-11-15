@@ -37,7 +37,7 @@ export const AdmissionService = {
     },
 
     getAllDoctors() {
-    return apiClient.get('/staff/doctors');
+        return apiClient.get('/staff/doctors');
     },
 
     getDoctorAgenda(doctorId: string) {
@@ -58,5 +58,14 @@ export const AdmissionService = {
 
     moveToConsultingRoom(appointmentId: string) {
         return apiClient.patch(`/admission/appointments/${appointmentId}/consulting-room`);
+    },
+
+    // 👇 NUEVOS MÉTODOS PARA EL FLUJO DE ASIGNACIÓN
+    assignPatient(doctorId: string, patientId: string) {
+        return apiClient.post(`/staff/doctors/${doctorId}/patients`, { patientId });
+    },
+
+    getAssignedPatients() {
+        return apiClient.get('/staff/doctors/mis-pacientes');
     }
 };

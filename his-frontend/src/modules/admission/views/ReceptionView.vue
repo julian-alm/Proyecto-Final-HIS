@@ -1,21 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { AdmissionService } from '../services/admission.service';
+import { useAuthStore } from '../../iam/store/auth.store';
 import ToastAlert from '../../../shared/components/ToastAlert.vue';
 
+const authStore = useAuthStore();
+const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
+
+// --- ESTADO DEL REGISTRO ---
 const patientData = ref({
     dni: '',
     firstName: '',
     lastName: '',
     coverageType: 'PRIVATE'
 });
-
 const isSubmitting = ref(false);
-const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
+
+// --- ESTADO DE LA ASIGNACIÓN ---
+const doctors = ref<any[]>([]);
+const selectedDoctorId = ref('');
+const patientDniToAssign = ref('');
+const isAssigning = ref(false);
+
+onMounted(async () => {
+    try {
+        const response = await AdmissionService.getAllDoctors();
+        console.log("1. Lo que mandó el backend:", response); 
+        
+        // Esta línea a prueba de balas saca los datos vengan como vengan
+        const resultado = response.data || response;
+        doctors.value = resultado.data || resultado;
+        
+        console.log("2. Doctores listos para mostrar:", doctors.value);
+    } catch (error) {
+        console.error("Error al cargar médicos:", error);
+    }
+});
 
 const handleRegisterPatient = async () => {
     isSubmitting.value = true;
-    
     try {
         const response = await AdmissionService.registerPatient(patientData.value);
         toastRef.value?.show(`Paciente registrado con éxito. ID: ${response.data.patientId.id}`, 'success');
@@ -27,13 +50,33 @@ const handleRegisterPatient = async () => {
         isSubmitting.value = false;
     }
 };
+
+const handleAssignPatient = async () => {
+    if (!selectedDoctorId.value || !patientDniToAssign.value.trim()) {
+        toastRef.value?.show('Seleccioná un médico e ingresá el DNI.', 'error');
+        return;
+    }
+    isAssigning.value = true;
+    try {
+        // Usamos tu servicio en lugar del fetch feo
+        await AdmissionService.assignPatient(selectedDoctorId.value, patientDniToAssign.value.trim());
+        
+        toastRef.value?.show('¡Paciente vinculado al médico exitosamente!', 'success');
+        patientDniToAssign.value = '';
+        selectedDoctorId.value = '';
+    } catch (error) {
+        console.error('Error de conexión con el servidor:', error);
+        toastRef.value?.show('Error de conexión con el servidor.', 'error');
+    } finally {
+        isAssigning.value = false;
+    }
+};
 </script>
 
 <template>
     <div class="reception-container">
         <div class="form-card">
             <h2>Registrar nuevo paciente</h2>
-
             <form @submit.prevent="handleRegisterPatient" class="patient-form">
                 <div class="input-group">
                     <label>DNI</label>
@@ -65,6 +108,30 @@ const handleRegisterPatient = async () => {
             </form>
         </div>
 
+        <div class="form-card">
+            <h2>Asignar Paciente a Médico</h2>
+            <form @submit.prevent="handleAssignPatient" class="patient-form">
+                <div class="input-group">
+                    <label>Seleccionar Profesional</label>
+                    <select v-model="selectedDoctorId" required>
+                        <option value="" disabled>-- Elegir un médico --</option>
+                        <option v-for="doc in doctors" :key="doc.id" :value="doc.id">
+                         Dr/a. {{ doc.fullName }} - {{ doc.specialty }}
+                        </option>                
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>DNI del Paciente</label>
+                    <input v-model="patientDniToAssign" type="text" placeholder="Ej. 11223344" required />
+                </div>
+
+                <button type="submit" class="btn-submit btn-assign" :disabled="isAssigning">
+                    {{ isAssigning ? 'Vinculando...' : 'Vincular Paciente' }}
+                </button>
+            </form>
+        </div>
+
         <ToastAlert ref="toastRef" />
     </div>
 </template>
@@ -72,6 +139,8 @@ const handleRegisterPatient = async () => {
 <style scoped>
 .reception-container { 
     display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
     justify-content: center;
     padding: 30px 20px;
 }
@@ -82,8 +151,9 @@ const handleRegisterPatient = async () => {
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     width: 100%;
-    max-width: 600px;
+    max-width: 500px;
     box-sizing: border-box;
+    height: fit-content;
 }
 
 .form-card h2 {
@@ -153,5 +223,13 @@ input:focus, select:focus {
 .btn-submit:disabled { 
     background-color: #95a5a6;
     cursor: not-allowed;
+}
+
+.btn-assign { 
+    background-color: #2c3e50; 
+}
+
+.btn-assign:hover:not(:disabled) { 
+    background-color: #1a252f; 
 }
 </style>
