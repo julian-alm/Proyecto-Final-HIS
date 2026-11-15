@@ -24,7 +24,9 @@ const loadingUsers = ref(false);
 const loadUsers = async () => {
   loadingUsers.value = true;
   try {
-    usersList.value = await iamService.getUsers();
+    const allUsers = await iamService.getUsers();
+    usersList.value = allUsers.filter((user: any) => user.role !== 'PATIENT');
+    
   } catch (error) {
     console.error('Error al cargar la lista de personal', error);
   } finally {

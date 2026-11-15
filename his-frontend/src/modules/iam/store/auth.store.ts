@@ -8,6 +8,9 @@ export const useAuthStore = defineStore('auth', () => {
   const userRole = ref<string | null>(localStorage.getItem('userRole'));
   const userFullName = ref<string | null>(localStorage.getItem('userFullName'));
   const userId = ref<string | null>(localStorage.getItem('userId'));
+  
+  // NUEVO: Agregamos el DNI al estado de Pinia
+  const userDni = ref<string | null>(localStorage.getItem('userDni'));
 
   // Getters (Propiedades computadas)
   const isAuthenticated = computed(() => !!token.value);
@@ -16,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
     id: userId.value,
     fullName: userFullName.value,
     role: userRole.value,
+    dni: userDni.value, // Lo exponemos en el usuario actual
   }));
 
   // Acciones
@@ -29,11 +33,15 @@ export const useAuthStore = defineStore('auth', () => {
       userRole.value = user.role;
       userFullName.value = user.fullName;
       userId.value = user.id;
+      userDni.value = user.dni || null; // Guardamos el DNI si viene del backend
       
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userFullName', user.fullName);
       localStorage.setItem('userId', user.id);
+      if (user.dni) {
+        localStorage.setItem('userDni', user.dni);
+      }
 
       return true;
     } catch (error) {
@@ -47,17 +55,17 @@ export const useAuthStore = defineStore('auth', () => {
     userRole.value = null;
     userFullName.value = null;
     userId.value = null;
+    userDni.value = null; // Limpiamos al salir
     
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userFullName');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userDni');
   };
 
-  // NUEVA ACCIÓN: Registro exclusivo para pacientes
-  const registerPatient = async (data: { fullName: string; email: string; passwordPlain: string }) => {
+  const registerPatient = async (data: { fullName: string; email: string; passwordPlain: string; dni: string }) => { 
     try {
-      // Hacemos el POST al endpoint público que creamos en el backend
       const response = await apiClient.post('/iam/register/patient', data);
       return response.data;
     } catch (error) {
@@ -71,11 +79,12 @@ export const useAuthStore = defineStore('auth', () => {
     userRole, 
     userFullName,
     userId,
+    userDni, // Exportamos para que la vista lo lea
     isAuthenticated, 
     isAdmin,
     currentUser,
     login, 
     logout,
-    registerPatient // Exportamos la nueva acción
+    registerPatient
   };
 });

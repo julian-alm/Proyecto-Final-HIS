@@ -18,7 +18,6 @@
       </div>
 
       <nav class="nav-links">
-        <span class="nav-group-title">GENERAL</span>
         
         <span class="nav-group-title mt-2">OPERACIÓN CLÍNICA</span>
         

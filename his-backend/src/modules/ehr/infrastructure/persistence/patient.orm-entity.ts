@@ -16,4 +16,7 @@ export class PatientOrmEntity {
 
     @Column()
     coverageType: string;
+
+    @Column({ type: 'uuid', nullable: true })
+    userId: string;
 }
