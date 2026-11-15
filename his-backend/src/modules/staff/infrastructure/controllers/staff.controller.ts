@@ -9,27 +9,27 @@ import { v4 as uuidv4 } from 'uuid';
 @Controller('staff')
 @UseGuards(RolesGuard)
 export class StaffController {
-    constructor(
-        private readonly doctorProfileRepository: TypeOrmDoctorProfileRepository,
-        // Inyectamos el EntityManager acá para las consultas complejas de SQL directo
-        @InjectEntityManager() private readonly entityManager: EntityManager,
-    ) {}
+  constructor(
+    private readonly doctorProfileRepository: TypeOrmDoctorProfileRepository,
+    // Inyectamos el EntityManager acá para las consultas complejas de SQL directo
+    @InjectEntityManager() private readonly entityManager: EntityManager,
+  ) {}
 
-    @Get('doctors')
-    @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.NURSE)
-    async getAllDoctors() {
-        const doctors = await this.entityManager.query(`
-            SELECT dp.id, u."fullName", dp.specialty 
-            FROM doctor_profiles dp 
-            JOIN users u ON dp."userId" = u.id
-        `);
-        return {
-            status: 'success',
-            data: doctors
-        };
-    }
+  @Get('doctors')
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.NURSE)
+  async getAllDoctors() {
+    const doctors = await this.entityManager.query(`
+      SELECT dp.id, u."fullName", dp.specialty 
+      FROM doctor_profiles dp 
+      JOIN users u ON dp."userId" = u.id
+    `);
+    return {
+      status: 'success',
+      data: doctors
+    };
+  }
 
-@Post('doctors/:doctorId/patients')
+  @Post('doctors/:doctorId/patients')
   @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
   async assignPatient(
     @Param('doctorId') doctorId: string,
@@ -37,10 +37,10 @@ export class StaffController {
   ) {
     // Usamos SQL directo para garantizar que se guarde sin errores del ORM
     await this.entityManager.query(`
-      INSERT INTO doctor_patient_assignments (id, "doctorProfileId", "patientId", "assignedAt")
+      INSERT INTO doctor_patient_assignments (id, "doctorId", "patientId", "assignedAt")
       VALUES (gen_random_uuid(), $1, $2, NOW())
     `, [doctorId, patientId]);
-
+    
     return {
       status: 'success',
       message: 'Paciente asignado al médico exitosamente.'
