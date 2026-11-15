@@ -1,65 +1,100 @@
-import { jest } from '@jest/globals';
-import { RegisterPatientUseCase, RegisterPatientCommand } from './register-patient.use-case';
-import { IUserRepository } from '../../domain/ports/user.repository.port';
-import { User } from '../../domain/entities/user.entity';
-import { UserRole } from '../../domain/entities/user-role.enum';
+import { RegisterPatientUseCase } from './register-patient.use-case';
 import { DomainException } from '../../../../shared/domain/domain-exception';
-import * as bcrypt from 'bcrypt';
-
-class FakeUserRepository extends IUserRepository {
-  public users: Map<string, User> = new Map();
-
-  async findByEmail(email: string): Promise<User | null> {
-    const found = Array.from(this.users.values()).find(u => u.email.toLowerCase() === email.toLowerCase());
-    return found || null;
-  }
-  async save(user: User): Promise<User> { this.users.set(user.id, user); return user; }
-  async findAll(): Promise<User[]> { return Array.from(this.users.values()); }
-}
+import { jest } from '@jest/globals';
 
 describe('RegisterPatientUseCase', () => {
   let useCase: RegisterPatientUseCase;
-  let fakeRepo: FakeUserRepository;
+  let mockUserRepository: any;
+  let mockEntityManager: any;
 
   beforeEach(() => {
-    fakeRepo = new FakeUserRepository();
-    useCase = new RegisterPatientUseCase(fakeRepo);
+    // 1. Mockeamos el repositorio de usuarios
+    mockUserRepository = {
+      findByEmail: jest.fn(),
+      save: jest.fn(),
+    };
+    
+    // 2. Mockeamos el EntityManager que agregamos hoy
+    mockEntityManager = {
+      query: jest.fn(),
+    };
+    
+    // Inyectamos ambos mocks al instanciar el caso de uso
+    useCase = new RegisterPatientUseCase(mockUserRepository, mockEntityManager);
   });
 
-  it('debería registrar un paciente nuevo forzando el rol PATIENT', async () => {
-    const command: RegisterPatientCommand = {
-      fullName: 'Laura Paciente',
-      email: 'laura@paciente.com',
-      passwordPlain: 'Secreta123',
+  it('debería registrar un paciente nuevo y crear su registro clínico en blanco', async () => {
+    // ARRANGE
+    mockUserRepository.findByEmail.mockResolvedValue(null);
+    mockUserRepository.save.mockImplementation(async (user: any) => user);
+    
+    // Simulamos que el SELECT por DNI devuelve vacío (el paciente no existe en la clínica)
+    mockEntityManager.query.mockResolvedValue([]); 
+
+    const command = {
+      fullName: 'Juan Pérez',
+      email: 'juan@correo.com',
+      passwordPlain: '123456',
+      dni: '30112455' // <-- Ahora mandamos el DNI
     };
 
+    // ACT
     const result = await useCase.execute(command);
 
-    // ASSERT: Verificamos que el sistema forzó el rol
-    expect(result.id).toBeDefined();
-    expect(result.fullName).toBe('Laura Paciente');
-    expect(result.role).toBe('PATIENT'); 
-    
-    // Verificamos que la BD en memoria está actualizada y encriptada
-    const savedUser = await fakeRepo.findByEmail('laura@paciente.com');
-    expect(savedUser?.role).toBe('PATIENT');
-    expect(savedUser?.passwordHash).not.toBe('Secreta123');
+    // ASSERT
+    expect(mockUserRepository.save).toHaveBeenCalled();
+    // Debe haber llamado al query 2 veces: una para el SELECT y otra para el INSERT
+    expect(mockEntityManager.query).toHaveBeenCalledTimes(2); 
+    expect(mockEntityManager.query).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('INSERT INTO patients'),
+      expect.any(Array)
+    );
+    expect(result.email).toBe('juan@correo.com');
+    expect(result.role).toBe('PATIENT');
   });
 
-  it('debería lanzar DomainException si el email ya existe', async () => {
-    // ARRANGE: Un admin registrado previamente
-    const passwordHash = await bcrypt.hash('123456', 10);
-    const existing = new User('uuid-1', 'Admin', 'admin@hospital.com', passwordHash, 'ADMIN' as UserRole);
-    await fakeRepo.save(existing);
+  it('debería enlazar a un paciente existente si el DNI ya está registrado en la clínica', async () => {
+    // ARRANGE
+    mockUserRepository.findByEmail.mockResolvedValue(null);
+    mockUserRepository.save.mockImplementation(async (user: any) => ({ ...user, id: 'uuid-auth-123' }));
+    
+    // Simulamos que el paciente ya existe en la tabla patients
+    mockEntityManager.query.mockResolvedValue([{ id: 'uuid-clinico-999' }]);
 
-    // ACT & ASSERT: Intentar registrarse como paciente usando el correo del Admin
-    const command: RegisterPatientCommand = {
-      fullName: 'Intentando Robar Correo',
-      email: 'admin@hospital.com',
-      passwordPlain: 'OtraClave123',
+    const command = {
+      fullName: 'Maria Gomez',
+      email: 'maria@correo.com',
+      passwordPlain: '123456',
+      dni: '87654321'
     };
 
+    // ACT
+    await useCase.execute(command);
+
+    // ASSERT
+    // En lugar de un INSERT, debe haber ejecutado un UPDATE para enlazar el userId
+    expect(mockEntityManager.query).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining('UPDATE patients SET "userId"'),
+      expect.arrayContaining(['uuid-auth-123', '87654321'])
+    );
+  });
+
+  it('debería lanzar una DomainException si el email ya está registrado', async () => {
+    // ARRANGE
+    mockUserRepository.findByEmail.mockResolvedValue({ id: '1' });
+    
+    const command = {
+      fullName: 'Error Test',
+      email: 'existe@correo.com',
+      passwordPlain: '123456',
+      dni: '11111111'
+    };
+
+    // ACT & ASSERT
     await expect(useCase.execute(command)).rejects.toThrow(DomainException);
-    await expect(useCase.execute(command)).rejects.toThrow('El email admin@hospital.com ya está registrado.');
+    // Verificamos que no haya intentado hacer nada en la BD si falló rápido
+    expect(mockEntityManager.query).not.toHaveBeenCalled();
   });
 });

@@ -3,56 +3,61 @@ import { mount } from '@vue/test-utils';
 import PatientRegisterForm from './PatientRegisterForm.vue';
 
 describe('PatientRegisterForm.vue', () => {
-  
-  it('debería emitir "submit-register" con los datos completos al enviar el formulario', async () => {
-    // ARRANGE: Montamos el componente pasando los props iniciales
+  it('debería renderizar todos los campos correctamente incluyendo el nuevo DNI', () => {
     const wrapper = mount(PatientRegisterForm, {
-      props: { isLoading: false, errorMessage: '' }
+      props: { isLoading: false }
     });
-
-    // ACT: Simulamos la escritura del usuario
-    await wrapper.find('#fullName').setValue('Mariano Paciente');
-    await wrapper.find('#email').setValue('mariano@paciente.com');
-    await wrapper.find('#password').setValue('ClaveSegura123');
     
-    // Simulamos el envío del formulario
-    await wrapper.find('form').trigger('submit.prevent');
-
-    // ASSERT: Verificamos que el evento suba hacia la vista con el payload exacto
-    expect(wrapper.emitted()).toHaveProperty('submit-register');
-    const emitEvent = wrapper.emitted('submit-register');
-    
-    expect(emitEvent?.[0]).toEqual([{ 
-      fullName: 'Mariano Paciente',
-      email: 'mariano@paciente.com', 
-      passwordPlain: 'ClaveSegura123' 
-    }]);
+    expect(wrapper.find('#fullName').exists()).toBe(true);
+    expect(wrapper.find('#dni').exists()).toBe(true);
+    expect(wrapper.find('#email').exists()).toBe(true);
+    expect(wrapper.find('#password').exists()).toBe(true);
   });
 
-  it('debería deshabilitar los inputs y el botón cuando isLoading es true', async () => {
-    // ARRANGE
+  it('debería emitir el evento "submit-register" con el payload completo', async () => {
+    const wrapper = mount(PatientRegisterForm, {
+      props: { isLoading: false }
+    });
+
+    // ACT: Simulamos que el paciente llena todos los datos
+    await wrapper.find('#fullName').setValue('Carlos López');
+    await wrapper.find('#dni').setValue('30112455'); // <-- Llenamos el nuevo input
+    await wrapper.find('#email').setValue('carlos@correo.com');
+    await wrapper.find('#password').setValue('123456');
+
+    // Enviamos el formulario
+    await wrapper.find('form').trigger('submit.prevent');
+
+    // ASSERT: Verificamos que el emit salió y lleva el DNI
+    expect(wrapper.emitted('submit-register')).toBeTruthy();
+    expect(wrapper.emitted('submit-register')![0][0]).toEqual({
+      fullName: 'Carlos López',
+      dni: '30112455',
+      email: 'carlos@correo.com',
+      passwordPlain: '123456'
+    });
+  });
+
+  it('debería mostrar el mensaje de error si el componente padre lo manda', () => {
+    const wrapper = mount(PatientRegisterForm, {
+      props: { isLoading: false, errorMessage: 'El email ya está registrado.' }
+    });
+    
+    expect(wrapper.text()).toContain('El email ya está registrado.');
+    expect(wrapper.find('.alert-error').exists()).toBe(true);
+  });
+
+  it('debería deshabilitar inputs y cambiar texto del botón cuando está cargando (isLoading)', () => {
     const wrapper = mount(PatientRegisterForm, {
       props: { isLoading: true }
     });
-
-    // ACT & ASSERT: Verificamos el estado del DOM
-    const fullNameInput = wrapper.find('#fullName');
-    const emailInput = wrapper.find('#email');
-    const submitButton = wrapper.find('.btn-submit');
-
-    expect((fullNameInput.element as HTMLInputElement).disabled).toBe(true);
-    expect((emailInput.element as HTMLInputElement).disabled).toBe(true);
-    expect((submitButton.element as HTMLButtonElement).disabled).toBe(true);
-    expect(submitButton.text()).toBe('Creando cuenta...');
-  });
-
-  it('debería mostrar el mensaje de error si errorMessage tiene contenido', () => {
-    const wrapper = mount(PatientRegisterForm, {
-      props: { isLoading: false, errorMessage: 'El email ya existe' }
-    });
-
-    const errorDiv = wrapper.find('.alert-error');
-    expect(errorDiv.exists()).toBe(true);
-    expect(errorDiv.text()).toBe('El email ya existe');
+    
+    // Verificamos que los atributos "disabled" estén presentes
+    expect(wrapper.find('#fullName').attributes('disabled')).toBeDefined();
+    expect(wrapper.find('#dni').attributes('disabled')).toBeDefined();
+    expect(wrapper.find('.btn-submit').attributes('disabled')).toBeDefined();
+    
+    // Verificamos el feedback visual
+    expect(wrapper.text()).toContain('Creando cuenta...');
   });
 });

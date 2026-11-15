@@ -30,6 +30,9 @@ export class RegisterPatientDto {
 
   @MinLength(6)
   passwordPlain: string;
+
+  @IsNotEmpty()
+  dni: string;
 }
 
 export class LoginUserDto {
