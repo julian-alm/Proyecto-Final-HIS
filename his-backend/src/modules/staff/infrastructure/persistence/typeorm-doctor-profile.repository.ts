@@ -58,3 +58,4 @@ export class TypeOrmDoctorProfileRepository {
     const newProfile = this.doctorRepository.create(profileData);
     return await this.doctorRepository.save(newProfile);
   }
+}

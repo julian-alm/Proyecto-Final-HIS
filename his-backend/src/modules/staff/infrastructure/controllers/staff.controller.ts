@@ -2,8 +2,8 @@ import { Controller, Get, Post, Param, Body, UseGuards, Request } from '@nestjs/
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { TypeOrmDoctorProfileRepository } from '../persistence/typeorm-doctor-profile.repository';
-import { RolesGuard, Roles } from '../../../../iam/infrastructure/guards/roles.guard';
-import { UserRole } from '../../../../iam/domain/entities/user-role.enum';
+import { RolesGuard, Roles } from '../../../iam/infrastructure/guards/roles.guard';
+import { UserRole } from '../../../iam/domain/entities/user-role.enum';
 import { v4 as uuidv4 } from 'uuid';
 
 @Controller('staff')
@@ -84,3 +84,4 @@ export class StaffController {
 
     return { message: 'Perfil de doctor creado exitosamente', data: profile };
   }
+}
