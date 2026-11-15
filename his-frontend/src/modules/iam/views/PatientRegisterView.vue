@@ -13,7 +13,7 @@ const isLoading = ref(false);
 
 const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
 
-const handleRegister = async (data: { fullName: string; email: string; passwordPlain: string }) => {
+const handleRegister = async (data: { fullName: string; email: string; passwordPlain: string; dni: string }) => {
   try {
     errorMessage.value = '';
     isLoading.value = true;

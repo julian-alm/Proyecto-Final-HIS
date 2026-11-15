@@ -3,12 +3,16 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { IUserRepository } from '../../domain/ports/user.repository.port';
 import { DomainException } from '../../../../shared/domain/domain-exception';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class LoginUserUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly jwtService: JwtService,
+    // Inyectamos el EntityManager para buscar en la tabla patients
+    @InjectEntityManager() private readonly entityManager: EntityManager 
   ) {}
 
   async execute(email: string, passwordPlain: string) {
@@ -22,10 +26,28 @@ export class LoginUserUseCase {
       throw new DomainException('Credenciales inválidas o usuario inactivo.');
     }
 
+    // 1. Buscamos si este usuario tiene un DNI enlazado en la tabla de pacientes
+    let patientDni = null;
+    if (user.role === 'PATIENT') {
+      const patientResult = await this.entityManager.query(`
+        SELECT dni FROM patients WHERE "userId" = $1 LIMIT 1
+      `, [user.id]);
+      
+      if (patientResult && patientResult.length > 0) {
+        patientDni = patientResult[0].dni;
+      }
+    }
+
     const payload = { sub: user.id, email: user.email, role: user.role, fullName: user.fullName };
+    
     return {
       accessToken: await this.jwtService.signAsync(payload),
-      user: { id: user.id, fullName: user.fullName, role: user.role },
+      user: { 
+        id: user.id, 
+        fullName: user.fullName, 
+        role: user.role,
+        dni: patientDni // <-- ¡AHORA SÍ MANDAMOS EL DNI AL FRONTEND!
+      },
     };
   }
 }
