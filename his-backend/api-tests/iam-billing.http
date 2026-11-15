@@ -118,6 +118,26 @@ Content-Type: application/json
 }
 
 
+### Registrar a Julián Daró
+POST {{baseUrl}}/iam/register
+Content-Type: application/json
+
+{
+  "fullName": "Julián Daró",
+  "email": "julian.daro@gmail.com",
+  "passwordPlain": "julian123",
+  "role": "PATIENT"
+}
+
+### Hacer Login con Julián Daró
+# @name loginJulian
+POST {{baseUrl}}/iam/login
+Content-Type: application/json
+
+{
+  "email": "julian.daro@gmail.com",
+  "passwordPlain": "julian123"
+}
 
 
 ### ---pruebas billing module---
