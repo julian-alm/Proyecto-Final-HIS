@@ -9,18 +9,23 @@ import { MedicationAdministeredListener } from './application/listeners/medicati
 import { IamModule } from '../iam/iam.module'; 
 import { PriceListOrmEntity } from './infrastructure/persistance/price-list.orm-entity';
 import { EhrModule } from '../ehr/ehr.module';
+import { IChargeRepository } from './domain/ports/charge.repository.port';
+import { TypeOrmChargeRepository } from './infrastructure/persistance/typeorm-charge.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ChargeOrmEntity, PriceListOrmEntity]), // 1. Conectamos la tabla de base de datos
-    IamModule, // 2. Importamos IAM para que el controlador pueda usar @UseGuards(RolesGuard)
+    TypeOrmModule.forFeature([ChargeOrmEntity, PriceListOrmEntity]),
+    IamModule,
     EhrModule
   ],
   controllers: [BillingController],
   providers: [
     CalculateConsultationCostUseCase,
-    MedicationAdministeredListener // 3. Registramos el escuchador de eventos asíncronos
-    // Ya NO ponemos RolesGuard acá, porque viene inyectado a través del IamModule
+    MedicationAdministeredListener,
+    {
+      provide: IChargeRepository,
+      useClass: TypeOrmChargeRepository,
+    }
   ],
 })
 export class BillingModule {}

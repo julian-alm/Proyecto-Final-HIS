@@ -13,6 +13,13 @@ export class InventoryController {
         private readonly supplyRepository: ISupplyRepository,
     ) {}
 
+    // Función auxiliar para formatear: "iBuProFeNo 400MG" -> "Ibuprofeno 400mg"
+    private formatSupplyName(name: string): string {
+        if (!name) return '';
+        const trimmed = name.trim();
+        return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+    }
+
     @Post('movements')
     @Roles(UserRole.ADMIN, UserRole.NURSE)
     async registerMovement(@Body() body: { medicationName: string; quantity: number; type: 'INGRESO' | 'EGRESO'; reason: string }) {
@@ -20,26 +27,30 @@ export class InventoryController {
             throw new HttpException('Faltan datos obligatorios', HttpStatus.BAD_REQUEST);
         }
 
+        // Limpiamos los espacios y aplicamos el formato profesional
+        const formattedName = this.formatSupplyName(body.medicationName);
+
         if (body.type === 'INGRESO') {
-            const existing = await this.supplyRepository.findByName(body.medicationName);
-            // Tu método save() ya se encarga de crear el insumo y registrar el movimiento tipo INGRESO
+            const existing = await this.supplyRepository.findByName(formattedName);
+            
             const supply = new MedicalSupply(
                 existing ? existing.id : uuidv4(),
-                body.medicationName,
+                existing ? existing.name : formattedName, // Usamos el nombre bien formateado si es nuevo
                 Number(body.quantity),
                 existing ? existing.description : body.reason
             );
-            await this.supplyRepository.save(supply);
+            
+            // Pasamos el motivo dinámico (body.reason) aquí
+            await this.supplyRepository.save(supply, body.reason);
             return { message: 'Ingreso registrado correctamente' };
         } 
         
         if (body.type === 'EGRESO') {
             try {
-                // Tu método atómico ya valida stock insuficiente e inserta el EGRESO
-                await this.supplyRepository.decrementStockAtomically(body.medicationName, Number(body.quantity));
+                // Pasamos el motivo dinámico (body.reason) aquí también
+                await this.supplyRepository.decrementStockAtomically(formattedName, Number(body.quantity), body.reason);
                 return { message: 'Egreso registrado correctamente' };
             } catch (error: any) {
-                // Capturamos tu DomainException (ej: "Stock insuficiente")
                 throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
             }
         }

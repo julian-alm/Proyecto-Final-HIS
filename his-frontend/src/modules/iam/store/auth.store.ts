@@ -23,16 +23,13 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await apiClient.post('/iam/login', { email, passwordPlain });
       
-      // Desestructuramos exactamente lo que devuelve tu LoginUserUseCase
       const { accessToken, user } = response.data;
 
-      // Guardamos en memoria (Pinia)
       token.value = accessToken;
       userRole.value = user.role;
       userFullName.value = user.fullName;
       userId.value = user.id;
       
-      // Persistimos en localStorage para no perder la sesión al recargar F5
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userFullName', user.fullName);
@@ -57,6 +54,18 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('userId');
   };
 
+  // NUEVA ACCIÓN: Registro exclusivo para pacientes
+  const registerPatient = async (data: { fullName: string; email: string; passwordPlain: string }) => {
+    try {
+      // Hacemos el POST al endpoint público que creamos en el backend
+      const response = await apiClient.post('/iam/register/patient', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error en el registro de paciente:', error);
+      throw error;
+    }
+  };
+
   return { 
     token, 
     userRole, 
@@ -66,6 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     currentUser,
     login, 
-    logout 
+    logout,
+    registerPatient // Exportamos la nueva acción
   };
 });

@@ -168,7 +168,7 @@ const handleRegisterMovement = async () => {
   isLoading.value = true;
 
   try {
-    await apiClient.post('/inventory/movements', form);
+    await apiClient.post('/inventory/movements', { ...form });
     successMessage.value = 'Movimiento registrado con éxito.';
     form.quantity = 1;
     form.reason = '';

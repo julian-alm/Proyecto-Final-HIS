@@ -3,11 +3,38 @@ import { useAuthStore } from '../../modules/iam/store/auth.store';
 import LoginView from '../../modules/iam/views/LoginView.vue';
 import MainLayout from '../../shared/layouts/MainLayout.vue';
 
+// 1. Helper centralizado para definir la "pantalla de inicio" de cada rol
+const getDefaultRouteByRole = (role: string | null): string => {
+  switch (role) {
+    case 'ADMIN':
+      return '/users'; // o '/users', lo que prefieran que vea primero
+    case 'NURSE':
+      return '/nursing';
+    case 'DOCTOR':
+      return '/doctor-agenda';
+    case 'RECEPTIONIST':
+      return '/admission';
+    case 'CLEANER':
+      return '/beds';
+    case 'PATIENT':
+      return '/ehr'; // Redirige a la historia clínica final
+    default:
+      return '/login';
+  }
+};
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
     component: LoginView,
+    meta: { requiresAuth: false },
+  },
+  // NUEVA RUTA: Registro público para pacientes
+  {
+    path: '/register',
+    name: 'PatientRegister',
+    component: () => import('../../modules/iam/views/PatientRegisterView.vue'),
     meta: { requiresAuth: false },
   },
   {
@@ -19,7 +46,8 @@ const routes: Array<RouteRecordRaw> = [
         path: '',
         redirect: () => {
           const authStore = useAuthStore();
-          return authStore.userRole === 'CLEANER' ? '/beds' : '/billing';
+          // Redirige dinámicamente según el rol
+          return getDefaultRouteByRole(authStore.userRole);
         },
       },
       {
@@ -46,7 +74,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'beds',
         name: 'Beds',
         component: () => import('../../modules/beds/views/BedManagementView.vue'),
-      },
+      }, 
       {
         path: 'inventory',
         name: 'Inventory',
@@ -67,7 +95,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Users',
         component: () => import('../../modules/iam/views/RegisterUserView.vue'),
         meta: { roles: ['ADMIN'] },
-      },
+      }
     ],
   },
 ];
@@ -80,17 +108,20 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
 
+  // Si la ruta es privada y no está logueado -> Al Login
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next('/login');
   }
 
-  if (to.path === '/login' && authStore.isAuthenticated) {
-    return next(authStore.userRole === 'CLEANER' ? '/beds' : '/billing');
+  // Si está logueado e intenta ir al login o registro público -> A su página principal
+  if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
+    return next(getDefaultRouteByRole(authStore.userRole));
   }
 
+  // Si intenta ir a una ruta protegida y no tiene el rol necesario -> A su página principal
   const allowedRoles = to.meta.roles as string[] | undefined;
   if (allowedRoles && (!authStore.userRole || !allowedRoles.includes(authStore.userRole))) {
-    return next(authStore.userRole === 'CLEANER' ? '/beds' : '/billing');
+    return next(getDefaultRouteByRole(authStore.userRole));
   }
 
   next();
