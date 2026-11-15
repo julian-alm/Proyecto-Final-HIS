@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router'; 
 import { EhrNursingService } from '../../nursing/services/ehr-nursing.service';
+import { AdmissionService } from '../../admission/services/admission.service';
 import { useAuthStore } from '../../iam/store/auth.store';
 import ToastAlert from '../../../shared/components/ToastAlert.vue';
 
+const route = useRoute();
 const authStore = useAuthStore();
 
 const dniInput = ref('');
@@ -15,13 +18,12 @@ const isSearching = ref(false);
 const isSubmitting = ref(false);
 const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
 
-// 👇 ACÁ ESTÁ EL CAMBIO: El diccionario invisible para enlazar Auth con EHR sin prompts
 onMounted(async () => {
   if (authStore.userRole === 'PATIENT') {
     const patientDniMapping: Record<string, string> = {
       'Ana Rojas': '35123456',
       'Carlos Gómez': '11223344',
-      'Carlos Gomez': '11223344' // Por si se guardó sin tilde en el IAM
+      'Carlos Gomez': '11223344'
     };
 
     const userName = (authStore as any).userFullName || '';
@@ -30,19 +32,43 @@ onMounted(async () => {
     if (userDni) {
       dniInput.value = userDni;
       await searchByDniAndLoadHce(); 
-      dniInput.value = ''; // Lo limpiamos para que el frontend quede prolijo
+      dniInput.value = '';
     } else {
       toastRef.value?.show('Error: Cuenta de paciente no enlazada al legajo clínico.', 'error');
+    }
+  } else {
+    // 👇 AUTO-CARGA: Si venimos desde el botón de la agenda, leemos el DNI de la URL
+    const urlDni = route.params.dni as string;
+    if (urlDni) {
+      dniInput.value = urlDni;
+      await searchByDniAndLoadHce();
     }
   }
 });
 
-// Busca al paciente por DNI en la BD y luego carga su HCE (Para Médicos)
 const searchByDniAndLoadHce = async () => {
   if (!dniInput.value.trim()) return;
   isSearching.value = true;
 
   try {
+    // 🔒 CANDADO DE SEGURIDAD PARA MÉDICOS
+    if (authStore.userRole === 'DOCTOR') {
+      const assignedRes = await AdmissionService.getAssignedPatients();
+      const assigned = assignedRes.data?.data || assignedRes.data || [];
+      
+      // Verificamos si el DNI que intentan buscar está en su lista de asignados
+      const isAssigned = assigned.some((p: any) => p.dni === dniInput.value.trim());
+      
+      if (!isAssigned) {
+        toastRef.value?.show('Acceso Denegado: Este paciente no está en tu lista de asignados.', 'error');
+        currentPatient.value = null;
+        medicalRecord.value = null;
+        isSearching.value = false;
+        return; // Cortamos la ejecución acá, no lo dejamos ver nada
+      }
+    }
+
+    // Si pasa el candado (o si es otro rol), sigue el flujo normal
     const patientRes = await EhrNursingService.getPatientByDni(dniInput.value.trim());
     const patientData = patientRes.data?.data || patientRes.data;
 
@@ -54,7 +80,7 @@ const searchByDniAndLoadHce = async () => {
 
     currentPatient.value = patientData;
     await loadPatientClinicalData(patientData.id);
-    // Solo mostramos el toast de éxito si NO es paciente (para que la carga inicial sea limpia)
+    
     if (authStore.userRole !== 'PATIENT') {
       toastRef.value?.show('Historia Clínica cargada correctamente.', 'success');
     }
@@ -73,13 +99,11 @@ const loadPatientClinicalData = async (patientId: string) => {
     const recordRes = await EhrNursingService.getMedicalRecord(patientId);
     medicalRecord.value = recordRes.data?.data || recordRes.data;
   } catch (err) {
-    // Si somos pacientes y no hay historial, simplemente lo mostramos vacío.
     if (authStore.userRole === 'PATIENT') {
       medicalRecord.value = { progressNotes: [], careProtocols: [] };
       return;
     }
     
-    // Si somos médicos y no hay historial, lo creamos automáticamente
     try {
       const createdRes = await EhrNursingService.createMedicalRecord(patientId);
       medicalRecord.value = createdRes.data?.data || createdRes.data;

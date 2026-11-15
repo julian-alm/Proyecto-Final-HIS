@@ -74,15 +74,6 @@ Content-Type: application/json
   "role": "DOCTOR"
 }
 
-### Asignar Carlos (11223344) al Dr. Roberto Fernández
-POST {{baseUrl}}/staff/doctors/ACA_VA_EL_ID_DEL_PERFIL_DE_ROBERTO/patients
-Authorization: Bearer ACA_VA_EL_TOKEN_DE_RECEPCION_O_ADMIN
-Content-Type: application/json
-
-{
-  "patientId": "11223344"
-}
-
 ### Registrar a Ana Rojas (Paciente existente)
 POST {{baseUrl}}/iam/register
 Content-Type: application/json
