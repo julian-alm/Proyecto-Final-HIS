@@ -16,12 +16,15 @@ import { PromoteStandbyListener } from './application/listeners/promote-standby.
 import { InsertEntreturnoUseCase } from './application/use-case/insert-entreturno.use-case';
 import { GetDoctorAgendaUseCase } from './application/use-case/get-doctor-agenda.use-case';
 import { MoveToWaitingRoomUseCase, CompleteAppointmentUseCase, MoveToConsultingRoomUseCase } from './application/use-case/change-appointment-status.use-cases';
+import { TypeOrmDoctorProfileRepository } from '../staff/infrastructure/persistence/typeorm-doctor-profile.repository';
+import { StaffModule } from '../staff/staff.module';
 import { IamModule } from '../iam/iam.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([AppointmentOrmEntity, TriageOrmEntity]),
-        IamModule
+        IamModule,
+        StaffModule
     ],
     controllers: [AdmissionController],
     providers: [

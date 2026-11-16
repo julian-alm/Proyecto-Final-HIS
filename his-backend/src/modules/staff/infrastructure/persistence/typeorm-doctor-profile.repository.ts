@@ -10,7 +10,6 @@ export class TypeOrmDoctorProfileRepository {
         @InjectRepository(DoctorProfileOrmEntity)
         private readonly doctorRepository: Repository<DoctorProfileOrmEntity>,
         
-        // Inyectamos la nueva tabla puente
         @InjectRepository(DoctorPatientAssignmentOrmEntity)
         private readonly assignmentRepository: Repository<DoctorPatientAssignmentOrmEntity>,
     ) {}
@@ -24,7 +23,6 @@ export class TypeOrmDoctorProfileRepository {
         });
     }
 
-// Nueva función: Guarda la relación Médico - Paciente
   async assignPatientToDoctor(doctorId: string, patientId: string): Promise<DoctorPatientAssignmentOrmEntity> {
     const assignment = this.assignmentRepository.create({
       doctorId,
@@ -33,17 +31,14 @@ export class TypeOrmDoctorProfileRepository {
     return this.assignmentRepository.save(assignment);
   }
 
-  // Nueva función: Busca todos los pacientes asignados a un médico
   async getAssignedPatients(doctorId: string): Promise<string[]> {
     const assignments = await this.assignmentRepository.find({
       where: { doctorId },
       order: { assignedAt: 'DESC' }
     });
-    // Devolvemos solo un array con los IDs de los pacientes
     return assignments.map(a => a.patientId);
   }
 
-  // Nueva función: Crear el perfil médico automáticamente
   async createProfile(userId: string, licenseNumber: string, specialty: string): Promise<DoctorProfileOrmEntity> {
     const newProfile = this.doctorRepository.create({
       userId,
@@ -53,9 +48,14 @@ export class TypeOrmDoctorProfileRepository {
     return this.doctorRepository.save(newProfile);
   }
 
-  // Función actualizada de main para guardar el perfil (corregida para usar doctorRepository)
   async saveProfile(profileData: Partial<DoctorProfileOrmEntity>): Promise<DoctorProfileOrmEntity> {
     const newProfile = this.doctorRepository.create(profileData);
     return await this.doctorRepository.save(newProfile);
+  }
+
+  async findByUserId(userId: string): Promise<DoctorProfileOrmEntity | null> {
+    return this.doctorRepository.findOne({ 
+      where: { userId } 
+    });
   }
 }

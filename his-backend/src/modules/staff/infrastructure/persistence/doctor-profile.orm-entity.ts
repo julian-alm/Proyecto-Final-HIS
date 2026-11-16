@@ -15,7 +15,6 @@ export class DoctorProfileOrmEntity {
     @Column()
     specialty: string; 
 
-    // La magia del JOIN: TypeORM usará el 'userId' para buscar en la tabla 'users'
     @OneToOne(() => UserOrmEntity)
     @JoinColumn({ name: 'userId' }) 
     user: UserOrmEntity;

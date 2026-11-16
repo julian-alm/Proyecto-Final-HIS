@@ -82,8 +82,8 @@ const fetchDoctorAgenda = async () => {
 };
 
 const selectedDoctorInfo = computed(() => {
-  const doc = doctors.value.find(d => d.userId === selectedDoctorId.value);
-  return doc ? `${doc.user.fullName} (${doc.specialty})` : 'Médico no encontrado';
+  const doc = doctors.value.find(d => d.id === selectedDoctorId.value);
+  return doc ? `${doc.fullName} (${doc.specialty})` : 'Médico no encontrado';
 });
 
 const handleBookAppointment = async () => {
@@ -206,8 +206,8 @@ const formatTime = (dateString: string) => {
           <label>Seleccionar Médico:</label>
           <select v-model="selectedDoctorId" @change="fetchDoctorAgenda" :disabled="!patientDetails">
             <option value="">-- Elija un profesional --</option>
-            <option v-for="doc in doctors" :key="doc.id" :value="doc.userId">
-              Dr/a. {{ doc.user.fullName }} - {{ doc.specialty }}
+            <option v-for="doc in doctors" :key="doc.id" :value="doc.id">
+              Dr/a. {{ doc.fullName }} - {{ doc.specialty }}
             </option>
           </select>
         </div>
