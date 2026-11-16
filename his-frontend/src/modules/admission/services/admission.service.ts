@@ -60,7 +60,6 @@ export const AdmissionService = {
         return apiClient.patch(`/admission/appointments/${appointmentId}/consulting-room`);
     },
 
-    // 👇 NUEVOS MÉTODOS PARA EL FLUJO DE ASIGNACIÓN
     assignPatient(doctorId: string, patientId: string) {
         return apiClient.post(`/staff/doctors/${doctorId}/patients`, { patientId });
     },
