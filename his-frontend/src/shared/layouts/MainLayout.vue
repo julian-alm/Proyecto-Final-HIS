@@ -30,7 +30,7 @@
         </router-link>
 
         <router-link 
-          v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
+          v-if="['ADMIN', 'RECEPTIONIST', 'NURSE'].includes(authStore.userRole || '')" 
           to="/admission" 
           class="nav-item">
           <span class="material-symbols-rounded nav-icon">assignment_add</span>
@@ -38,7 +38,7 @@
         </router-link>
 
         <router-link 
-          v-if="['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'NURSE'].includes(authStore.userRole || '')" 
+          v-if="['ADMIN', 'RECEPTIONIST', 'NURSE'].includes(authStore.userRole || '')" 
           to="/triage" 
           class="nav-item">
           <span class="material-symbols-rounded nav-icon">assignment_ind</span>
@@ -77,7 +77,6 @@
           Panel de Enfermería
         </router-link>
 
-        <!-- 👇 ACÁ ESTÁ EL CAMBIO: Agregamos PATIENT y le cambiamos el texto dinámicamente -->
         <router-link 
           v-if="['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT'].includes(authStore.userRole || '')" 
           to="/ehr" 
