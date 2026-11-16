@@ -22,13 +22,10 @@ export class CleanBedUseCase {
             throw new DomainException('Cama no encontrada en el sistema.');
         }
 
-        // 1. El Patrón State valida que esté EN_LIMPIEZA y la pasa a LIBRES
         bed.markAsClean();
 
-        // 2. Guardamos en PostgreSQL
         await this.bedRepository.save(bed);
 
-        // 3. Notificamos al monitor del mapa de camas que ya está disponible
         this.eventEmitter.emit(
             'bed.status.changed',
             new BedStatusChangedEvent(bed.id, bed.roomNumber, bed.statusName)

@@ -70,7 +70,6 @@ async decrementStockAtomically(name: string, quantity: number, reason?: string):
             medicationName: supplyOrm.name,
             quantity: Number(quantity),
             type: MovementType.EGRESO,
-            // Usamos el motivo ingresado o un texto por defecto
             reason: reason || 'Administración de medicación a paciente',
         });
 

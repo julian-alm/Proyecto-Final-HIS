@@ -3,12 +3,10 @@ import { ISupplyRepository } from '../../domain/ports/supply.repository.port';
 import { MedicalSupply } from '../../domain/entities/medical-supply.entity';
 import { DomainException } from '../../../../shared/domain/domain-exception';
 
-// FAKE TEST DOUBLE: Simula el comportamiento atómico de TypeORM en memoria
 class FakeSupplyRepository implements ISupplyRepository {
     public supplies: Map<string, MedicalSupply> = new Map();
 
     async findByName(name: string): Promise<MedicalSupply | null> {
-        // Simulamos la búsqueda case-insensitive
         const key = Array.from(this.supplies.keys()).find(k => k.toLowerCase() === name.toLowerCase());
         return key ? this.supplies.get(key) || null : null;
     }
@@ -30,9 +28,8 @@ class FakeSupplyRepository implements ISupplyRepository {
             );
         }
 
-        // Simulamos la deducción exitosa y retornamos una nueva entidad actualizada
         const updatedSupply = new MedicalSupply(supply.id, supply.name, supply.stock - quantity, supply.description);
-        this.supplies.set(supply.name, updatedSupply); // Actualizamos el Fake
+        this.supplies.set(supply.name, updatedSupply);
         return updatedSupply;
     }
 
@@ -50,7 +47,7 @@ describe('DeductSupplyStockUseCase', () => {
     });
 
     it('debería descontar el stock correctamente y retornar la entidad actualizada', async () => {
-        // ARRANGE: Guardamos un insumo con stock inicial
+        // ARRANGE
         const initialSupply = new MedicalSupply('id-1', 'Ibuprofeno 400mg', 50, 'Analgesico');
         await fakeRepo.save(initialSupply);
         
@@ -59,16 +56,15 @@ describe('DeductSupplyStockUseCase', () => {
         // ACT
         const result = await useCase.execute(command);
 
-        // ASSERT: El stock devuelto debe ser 40 (50 - 10)
+        // ASSERT
         expect(result.stock).toBe(40);
         
-        // Verificamos que el Fake guardó el nuevo estado
         const savedSupply = await fakeRepo.findByName('Ibuprofeno 400mg');
         expect(savedSupply?.stock).toBe(40);
     });
 
     it('debería lanzar DomainException si el insumo no existe', async () => {
-        // ARRANGE: No guardamos nada en el Fake
+        // ARRANGE
         const command = new DeductSupplyStockCommand('Paracetamol 500mg', 5);
 
         // ACT & ASSERT
@@ -77,11 +73,10 @@ describe('DeductSupplyStockUseCase', () => {
     });
 
     it('debería lanzar DomainException si el stock requerido es mayor al disponible', async () => {
-        // ARRANGE: Guardamos un insumo con solo 2 unidades
+        // ARRANGE
         const initialSupply = new MedicalSupply('id-2', 'Amoxicilina 500mg', 2, 'Antibiotico');
         await fakeRepo.save(initialSupply);
         
-        // Intentamos descontar 10
         const command = new DeductSupplyStockCommand('Amoxicilina 500mg', 10);
 
         // ACT & ASSERT

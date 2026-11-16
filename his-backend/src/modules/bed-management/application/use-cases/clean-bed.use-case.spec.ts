@@ -26,7 +26,7 @@ describe('CleanBedUseCase', () => {
         // ARRANGE
         const bed = new Bed('CAMA-101', 'Sala-1');
         bed.assign('pac-123'); 
-        bed.discharge(); // Estado: EN_LIMPIEZA
+        bed.discharge(); 
         await fakeRepo.save(bed);
 
         // ACT
@@ -41,7 +41,7 @@ describe('CleanBedUseCase', () => {
     it('debería lanzar excepción si se intenta limpiar una cama ocupada', async () => {
         // ARRANGE
         const bed = new Bed('CAMA-102', 'Sala-2');
-        bed.assign('pac-123'); // Estado: OCUPADA
+        bed.assign('pac-123'); 
         await fakeRepo.save(bed);
 
         // ACT & ASSERT

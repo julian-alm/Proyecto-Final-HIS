@@ -1,6 +1,5 @@
 <template>
   <div class="beds-page">
-    <!-- Encabezado moderno sin el botón extra -->
     <div class="page-header">
       <span class="breadcrumb">Operación / Camas e Inventario</span>
       <div class="header-flex">
@@ -180,7 +179,6 @@ const successMessage = ref('');
 
 const localPatients = reactive<Record<string, string>>({});
 
-// --- Permisos por Rol ---
 const canAssign = computed(() => ['ADMIN', 'RECEPTIONIST'].includes(authStore.userRole || ''));
 const canDischarge = computed(() => ['ADMIN', 'RECEPTIONIST'].includes(authStore.userRole || ''));
 const canClean = computed(() => ['ADMIN', 'CLEANER'].includes(authStore.userRole || ''));
@@ -200,7 +198,6 @@ const loadBeds = async () => {
 
 onMounted(() => loadBeds());
 
-// --- Utilidad para Avatares ---
 const getInitials = (name?: string) => {
   if (!name) return 'PT';
   const parts = name.trim().split(' ');
@@ -208,7 +205,6 @@ const getInitials = (name?: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 
-// --- ESTADO MODAL ASIGNACIÓN ---
 const showModal = ref(false);
 const selectedBedId = ref('');
 const dniQuery = ref('');
@@ -256,7 +252,6 @@ const confirmAssignBed = async () => {
   }
 };
 
-// --- ESTADO MODAL DE ACCIONES ---
 const confirmDialog = reactive({
   show: false,
   bedId: '',
@@ -319,8 +314,6 @@ const executeConfirm = async () => {
   }
 };
 
-// --- Utilidades Visuales ---
-// --- Utilidad para Contar Estados ---
 const countStatus = (status: BedStateName) => {
   return bedsList.value.filter(bed => bed.status === status).length;
 };

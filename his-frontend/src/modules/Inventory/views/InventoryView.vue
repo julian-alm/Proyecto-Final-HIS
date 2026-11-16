@@ -244,7 +244,6 @@ input:disabled { background-color: #f8fafc; color: #94a3b8; }
 .badge-in { background-color: #d1fae5; color: #047857; }
 .badge-out { background-color: #fee2e2; color: #b91c1c; }
 
-/* Status Indicators */
 .status-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 500; color: #334155; }
 .dot { width: 8px; height: 8px; border-radius: 50%; }
 .dot-active { background-color: #10b981; }

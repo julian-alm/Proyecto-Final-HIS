@@ -19,16 +19,15 @@ describe('PatientRegisterForm.vue', () => {
       props: { isLoading: false }
     });
 
-    // ACT: Simulamos que el paciente llena todos los datos
+    // ACT
     await wrapper.find('#fullName').setValue('Carlos López');
     await wrapper.find('#dni').setValue('30112455'); // <-- Llenamos el nuevo input
     await wrapper.find('#email').setValue('carlos@correo.com');
     await wrapper.find('#password').setValue('123456');
 
-    // Enviamos el formulario
     await wrapper.find('form').trigger('submit.prevent');
 
-    // ASSERT: Verificamos que el emit salió y lleva el DNI
+    // ASSERT
     expect(wrapper.emitted('submit-register')).toBeTruthy();
     expect(wrapper.emitted('submit-register')![0][0]).toEqual({
       fullName: 'Carlos López',
@@ -52,12 +51,10 @@ describe('PatientRegisterForm.vue', () => {
       props: { isLoading: true }
     });
     
-    // Verificamos que los atributos "disabled" estén presentes
     expect(wrapper.find('#fullName').attributes('disabled')).toBeDefined();
     expect(wrapper.find('#dni').attributes('disabled')).toBeDefined();
     expect(wrapper.find('.btn-submit').attributes('disabled')).toBeDefined();
     
-    // Verificamos el feedback visual
     expect(wrapper.text()).toContain('Creando cuenta...');
   });
 });

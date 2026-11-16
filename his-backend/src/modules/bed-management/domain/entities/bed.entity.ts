@@ -2,11 +2,11 @@ import { IBedState, FreeState } from '../states/bed.state';
 
 export class Bed {
     constructor(
-        public readonly id: string, // Ej: "CAMA-101"
+        public readonly id: string, 
         public readonly roomNumber: string,
         public patientId: string | null = null,
         private state: IBedState = new FreeState(),
-        public version: number = 1 // Control de concurrencia optimista[cite: 13]
+        public version: number = 1 
     ) {}
 
     get statusName(): string {

@@ -22,13 +22,10 @@ export class UnblockBedUseCase {
             throw new DomainException('Cama no encontrada en el sistema.');
         }
 
-        // 1. El Patrón State valida y devuelve la cama a LIBRES
         bed.unblock();
 
-        // 2. Persistimos con control de versión
         await this.bedRepository.save(bed);
 
-        // 3. Emitimos evento para los monitores
         this.eventEmitter.emit(
             'bed.status.changed',
             new BedStatusChangedEvent(bed.id, bed.roomNumber, bed.statusName)

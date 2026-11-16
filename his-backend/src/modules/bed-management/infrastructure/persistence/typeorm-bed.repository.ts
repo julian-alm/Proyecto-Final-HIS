@@ -17,7 +17,6 @@ export class TypeOrmBedRepository implements IBedRepository {
         const ormEntity = await this.ormRepository.findOne({ where: { id } });
         if (!ormEntity) return null;
 
-        // Mapeo inverso: String de BD -> Objeto State de Dominio
         let state;
         switch (ormEntity.status) {
             case 'OCUPADAS': state = new OccupiedState(); break;
@@ -47,7 +46,6 @@ export class TypeOrmBedRepository implements IBedRepository {
         try {
                 await this.ormRepository.save(ormEntity);
             } catch (error) {
-                // Capturamos la excepción de concurrencia de TypeORM
                 if (error instanceof Error && error.name === 'OptimisticLockVersionMismatchError') {
                     throw new Error('Conflicto de concurrencia: La cama acaba de ser modificada por otro usuario.');
                 }

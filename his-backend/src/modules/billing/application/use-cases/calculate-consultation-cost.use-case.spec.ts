@@ -22,7 +22,6 @@ describe('CalculateConsultationCostUseCase', () => {
 
   beforeEach(() => {
     fakeRepo = new FakeChargeRepository();
-    // Inyección limpia y directa gracias a la Arquitectura Limpia
     useCase = new CalculateConsultationCostUseCase(fakeRepo);
   });
 

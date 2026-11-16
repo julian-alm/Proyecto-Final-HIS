@@ -24,7 +24,7 @@ describe('BlockBedUseCase', () => {
 
     it('debería bloquear una cama libre y emitir evento', async () => {
         // ARRANGE
-        const bed = new Bed('CAMA-101', 'Sala-1'); // LIBRE
+        const bed = new Bed('CAMA-101', 'Sala-1'); 
         await fakeRepo.save(bed);
 
         // ACT
@@ -39,7 +39,7 @@ describe('BlockBedUseCase', () => {
     it('debería lanzar excepción si se intenta bloquear una cama ocupada', async () => {
         // ARRANGE
         const bed = new Bed('CAMA-102', 'Sala-2');
-        bed.assign('pac-123'); // OCUPADA
+        bed.assign('pac-123'); 
         await fakeRepo.save(bed);
 
         // ACT & ASSERT

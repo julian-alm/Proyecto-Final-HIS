@@ -8,18 +8,15 @@ describe('RegisterPatientUseCase', () => {
   let mockEntityManager: any;
 
   beforeEach(() => {
-    // 1. Mockeamos el repositorio de usuarios
     mockUserRepository = {
       findByEmail: jest.fn(),
       save: jest.fn(),
     };
     
-    // 2. Mockeamos el EntityManager que agregamos hoy
     mockEntityManager = {
       query: jest.fn(),
     };
     
-    // Inyectamos ambos mocks al instanciar el caso de uso
     useCase = new RegisterPatientUseCase(mockUserRepository, mockEntityManager);
   });
 
@@ -28,14 +25,13 @@ describe('RegisterPatientUseCase', () => {
     mockUserRepository.findByEmail.mockResolvedValue(null);
     mockUserRepository.save.mockImplementation(async (user: any) => user);
     
-    // Simulamos que el SELECT por DNI devuelve vacío (el paciente no existe en la clínica)
     mockEntityManager.query.mockResolvedValue([]); 
 
     const command = {
       fullName: 'Juan Pérez',
       email: 'juan@correo.com',
       passwordPlain: '123456',
-      dni: '30112455' // <-- Ahora mandamos el DNI
+      dni: '30112455' 
     };
 
     // ACT
@@ -43,7 +39,6 @@ describe('RegisterPatientUseCase', () => {
 
     // ASSERT
     expect(mockUserRepository.save).toHaveBeenCalled();
-    // Debe haber llamado al query 2 veces: una para el SELECT y otra para el INSERT
     expect(mockEntityManager.query).toHaveBeenCalledTimes(2); 
     expect(mockEntityManager.query).toHaveBeenNthCalledWith(
       2,
@@ -59,7 +54,6 @@ describe('RegisterPatientUseCase', () => {
     mockUserRepository.findByEmail.mockResolvedValue(null);
     mockUserRepository.save.mockImplementation(async (user: any) => ({ ...user, id: 'uuid-auth-123' }));
     
-    // Simulamos que el paciente ya existe en la tabla patients
     mockEntityManager.query.mockResolvedValue([{ id: 'uuid-clinico-999' }]);
 
     const command = {
@@ -73,7 +67,6 @@ describe('RegisterPatientUseCase', () => {
     await useCase.execute(command);
 
     // ASSERT
-    // En lugar de un INSERT, debe haber ejecutado un UPDATE para enlazar el userId
     expect(mockEntityManager.query).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining('UPDATE patients SET "userId"'),
@@ -94,7 +87,6 @@ describe('RegisterPatientUseCase', () => {
 
     // ACT & ASSERT
     await expect(useCase.execute(command)).rejects.toThrow(DomainException);
-    // Verificamos que no haya intentado hacer nada en la BD si falló rápido
     expect(mockEntityManager.query).not.toHaveBeenCalled();
   });
 });

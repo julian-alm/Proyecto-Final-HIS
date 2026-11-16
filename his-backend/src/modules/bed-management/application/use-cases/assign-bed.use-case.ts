@@ -23,10 +23,10 @@ export class AssignBedUseCase {
             throw new DomainException('Cama no encontrada en el sistema.');
         }
 
-        // La máquina de estados evalúa si está "LIBRE". Si no lo está, lanza DomainException.
+        
         bed.assign(command.patientId);
 
-        // Persistimos. El ORM rechazará si otro usuario guardó un milisegundo antes (Concurrencia).
+        
         await this.bedRepository.save(bed);
     }
 }

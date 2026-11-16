@@ -10,13 +10,11 @@ export interface RegisterPatientPayload {
 }
 
 export const iamService = {
-  // Registro para personal (Admin)
   async registerUser(payload: RegisterUserPayload) {
     const response = await apiClient.post('/iam/register', payload);
     return response.data;
   },
 
-  // NUEVO: Registro para pacientes (Público, incluye DNI)
   async registerPatient(payload: RegisterPatientPayload) {
     const response = await apiClient.post('/iam/register/patient', payload);
     return response.data;

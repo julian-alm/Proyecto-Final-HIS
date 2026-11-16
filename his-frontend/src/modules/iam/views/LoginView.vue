@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth.store';
-import LoginForm from '../components/LoginForm.vue'; // Importamos el nuevo componente
+import LoginForm from '../components/LoginForm.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -10,7 +10,6 @@ const authStore = useAuthStore();
 const errorMessage = ref('');
 const isLoading = ref(false);
 
-// Recibe el payload emitido por el LoginForm
 const handleLogin = async (credentials: { email: string; passwordPlain: string }) => {
   try {
     errorMessage.value = '';

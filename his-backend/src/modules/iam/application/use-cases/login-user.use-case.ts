@@ -11,7 +11,6 @@ export class LoginUserUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly jwtService: JwtService,
-    // Inyectamos el EntityManager para buscar en la tabla patients
     @InjectEntityManager() private readonly entityManager: EntityManager 
   ) {}
 
@@ -26,7 +25,6 @@ export class LoginUserUseCase {
       throw new DomainException('Credenciales inválidas o usuario inactivo.');
     }
 
-    // 1. Buscamos si este usuario tiene un DNI enlazado en la tabla de pacientes
     let patientDni = null;
     if (user.role === 'PATIENT') {
       const patientResult = await this.entityManager.query(`
@@ -46,7 +44,7 @@ export class LoginUserUseCase {
         id: user.id, 
         fullName: user.fullName, 
         role: user.role,
-        dni: patientDni // <-- ¡AHORA SÍ MANDAMOS EL DNI AL FRONTEND!
+        dni: patientDni 
       },
     };
   }

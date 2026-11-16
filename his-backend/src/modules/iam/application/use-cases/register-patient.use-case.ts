@@ -19,7 +19,6 @@ export interface RegisterPatientCommand {
 export class RegisterPatientUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
-    // Inyectamos el EntityManager para poder tocar la tabla 'patients' del otro módulo
     @InjectEntityManager() private readonly entityManager: EntityManager
   ) {}
 
@@ -29,7 +28,6 @@ export class RegisterPatientUseCase {
       throw new DomainException(`El email ${command.email} ya está registrado.`);
     }
 
-    // 1. Creamos la cuenta de inicio de sesión (User)
     const passwordHash = await bcrypt.hash(command.passwordPlain, 10);
     const newUserId = randomUUID();
     
@@ -42,18 +40,15 @@ export class RegisterPatientUseCase {
     );
     const savedUser = await this.userRepository.save(newPatientAuth);
 
-    // 2. LÓGICA DE ENLACE: Buscamos si el paciente clínico ya existe por DNI
     const existingPatientList = await this.entityManager.query(`
       SELECT id FROM patients WHERE dni = $1 LIMIT 1
     `, [command.dni]);
 
     if (existingPatientList && existingPatientList.length > 0) {
-      // 3A. Ya existía: Simplemente le asignamos su nuevo userId para enlazar la historia
       await this.entityManager.query(`
         UPDATE patients SET "userId" = $1 WHERE dni = $2
       `, [savedUser.id, command.dni]);
     } else {
-      // 3B. No existía: Creamos el paciente clínico en blanco y lo enlazamos
       const names = command.fullName.split(' ');
       const firstName = names[0];
       const lastName = names.slice(1).join(' ') || '';

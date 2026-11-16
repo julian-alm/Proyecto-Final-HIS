@@ -9,7 +9,7 @@ export class BillingStrategyFactory {
       case 'PUBLIC':
         return new PublicCoverageStrategy();
       case 'PREPAID':
-        return new PrepaidCoverageStrategy(3000); // 3000 es el copago fijo del enunciado
+        return new PrepaidCoverageStrategy(3000);
       case 'PRIVATE':
         return new PrivateCoverageStrategy();
       default:

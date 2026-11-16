@@ -53,14 +53,13 @@ export class IamController {
   ) {}
 
   @Post('register')
-  @Roles(UserRole.ADMIN) // SOLO EL ADMIN PUEDE CREAR OTROS USUARIOS
+  @Roles(UserRole.ADMIN)
   register(@Body() dto: RegisterUserDto) {
     return this.registerUserUseCase.execute(dto);
   }
 
   @Post('register/patient')
   registerPatient(@Body() dto: RegisterPatientDto) {
-    // Cualquiera puede llamar acá y siempre se creará como PATIENT
     return this.registerPatientUseCase.execute(dto);
   }
 

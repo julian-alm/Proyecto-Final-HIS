@@ -3,7 +3,6 @@ import { mount, flushPromises } from '@vue/test-utils';
 import InventoryView from './InventoryView.vue';
 import { apiClient } from '../../../core/api/axios.client';
 
-// Mockeamos Axios para que no dispare peticiones reales a NestJS
 vi.mock('../../../core/api/axios.client', () => ({
   apiClient: {
     get: vi.fn(),
@@ -17,18 +16,18 @@ describe('InventoryView.vue', () => {
   });
 
   it('debería cargar y renderizar el historial de movimientos al montarse', async () => {
-    // ARRANGE: Simulamos la respuesta del backend para el historial
+    // ARRANGE
     (apiClient.get as any).mockResolvedValue({
       data: [
         { id: 1, medicationName: 'Ibuprofeno 400mg', type: 'INGRESO', quantity: 50, reason: 'Compra al proveedor', createdAt: '2026-11-14T10:00:00Z' }
       ]
     });
 
-    // ACT: Montamos el componente
+    // ACT
     const wrapper = mount(InventoryView);
-    await flushPromises(); // Esperamos a que se resuelvan las promesas del onMounted
+    await flushPromises();
 
-    // ASSERT: Verificamos que llamó al endpoint correcto y pintó la tabla
+    // ASSERT
     expect(apiClient.get).toHaveBeenCalledWith('/inventory/movements');
     expect(wrapper.text()).toContain('Ibuprofeno 400mg');
     expect(wrapper.text()).toContain('+50');
@@ -36,7 +35,7 @@ describe('InventoryView.vue', () => {
   });
 
   it('debería cambiar a la pestaña de Stock y pedir los datos consolidados', async () => {
-    // ARRANGE: Simulamos ambas respuestas (la primera del onMounted, la segunda del clic)
+    // ARRANGE
     (apiClient.get as any).mockResolvedValueOnce({ data: [] }); 
     (apiClient.get as any).mockResolvedValueOnce({
       data: [{ medicationName: 'Paracetamol 500mg', currentStock: 15 }]
@@ -45,16 +44,16 @@ describe('InventoryView.vue', () => {
     const wrapper = mount(InventoryView);
     await flushPromises();
 
-    // ACT: Hacemos clic en la pestaña "Stock Consolidado" (el segundo botón)
+    // ACT
     const tabs = wrapper.findAll('.tab-btn');
     await tabs[1].trigger('click');
-    await flushPromises(); // Esperamos al watch() y la petición Axios
+    await flushPromises();
 
-    // ASSERT: Verificamos que cambió de endpoint y actualizó la tabla
+    // ASSERT
     expect(apiClient.get).toHaveBeenCalledWith('/inventory/stock');
     expect(wrapper.text()).toContain('Paracetamol 500mg');
     expect(wrapper.text()).toContain('15 unid.');
-    expect(wrapper.text()).toContain('Óptimo'); // Verifica la lógica de los dots visuales
+    expect(wrapper.text()).toContain('Óptimo');
   });
 
   it('debería registrar un nuevo movimiento enviando el formulario', async () => {
@@ -65,16 +64,15 @@ describe('InventoryView.vue', () => {
     const wrapper = mount(InventoryView);
     await flushPromises();
 
-    // ACT: Llenamos los inputs del formulario simulando escritura real
+    // ACT
     await wrapper.find('input[placeholder="Ej. Ibuprofeno 400mg"]').setValue('Amoxicilina');
     await wrapper.find('input[placeholder="Ej. 50"]').setValue(20);
     await wrapper.find('input[placeholder="Ej. Compra a proveedor"]').setValue('Ajuste manual');
     
-    // Dejamos el tipo en 'INGRESO' (que es el default) y enviamos el form
     await wrapper.find('form').trigger('submit.prevent');
     await flushPromises();
 
-    // ASSERT: Verificamos que se haya enviado el payload correcto al backend
+    // ASSERT
     expect(apiClient.post).toHaveBeenCalledWith('/inventory/movements', {
       medicationName: 'Amoxicilina',
       quantity: 20,
@@ -82,7 +80,6 @@ describe('InventoryView.vue', () => {
       reason: 'Ajuste manual'
     });
     
-    // Verificamos que el mensaje de éxito aparezca en pantalla
     expect(wrapper.text()).toContain('Movimiento registrado con éxito.');
   });
 });

@@ -18,11 +18,11 @@ export class ChargeOrmEntity {
   thirdPartyAmount: number;
 
   @Column()
-  concept: string; // Ej: "Consulta Médica General" o "Insumos de Farmacia"
+  concept: string; 
 
   @CreateDateColumn()
   createdAt: Date;
 
   @Column({ nullable: true })
-  sourceEventId: string; // Cumple con: "vinculada al ID del evento original"
+  sourceEventId: string; 
 }

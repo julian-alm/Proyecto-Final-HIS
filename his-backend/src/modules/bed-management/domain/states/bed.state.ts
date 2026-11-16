@@ -53,7 +53,7 @@ export class OccupiedState implements IBedState {
     }
 
     export class BlockedState implements IBedState {
-    readonly name = 'BLOQUEADAS'; // Fuera de servicio por mantenimiento[cite: 14]
+    readonly name = 'BLOQUEADAS'; 
 
     assignPatient(): void { throw new DomainException('La cama está fuera de servicio por mantenimiento.'); }
     dischargePatient(): void { throw new DomainException('La cama está bloqueada y vacía.'); }

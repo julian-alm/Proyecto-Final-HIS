@@ -3,23 +3,19 @@ import { ref, computed } from 'vue';
 import { apiClient } from '../../../core/api/axios.client';
 
 export const useAuthStore = defineStore('auth', () => {
-  // Estado inicializado desde localStorage
   const token = ref<string | null>(localStorage.getItem('accessToken'));
   const userRole = ref<string | null>(localStorage.getItem('userRole'));
   const userFullName = ref<string | null>(localStorage.getItem('userFullName'));
   const userId = ref<string | null>(localStorage.getItem('userId'));
-  
-  // NUEVO: Agregamos el DNI al estado de Pinia
   const userDni = ref<string | null>(localStorage.getItem('userDni'));
 
-  // Getters (Propiedades computadas)
   const isAuthenticated = computed(() => !!token.value);
   const isAdmin = computed(() => userRole.value === 'ADMIN');
   const currentUser = computed(() => ({
     id: userId.value,
     fullName: userFullName.value,
     role: userRole.value,
-    dni: userDni.value, // Lo exponemos en el usuario actual
+    dni: userDni.value,
   }));
 
   // Acciones
@@ -33,7 +29,7 @@ export const useAuthStore = defineStore('auth', () => {
       userRole.value = user.role;
       userFullName.value = user.fullName;
       userId.value = user.id;
-      userDni.value = user.dni || null; // Guardamos el DNI si viene del backend
+      userDni.value = user.dni || null;
       
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('userRole', user.role);
@@ -55,7 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
     userRole.value = null;
     userFullName.value = null;
     userId.value = null;
-    userDni.value = null; // Limpiamos al salir
+    userDni.value = null;
     
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userRole');
@@ -79,7 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
     userRole, 
     userFullName,
     userId,
-    userDni, // Exportamos para que la vista lo lea
+    userDni,
     isAuthenticated, 
     isAdmin,
     currentUser,

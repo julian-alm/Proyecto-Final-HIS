@@ -1,9 +1,9 @@
 export type BedStateName = 'LIBRES' | 'OCUPADAS' | 'EN_LIMPIEZA' | 'BLOQUEADAS';
 
 export interface BedItem {
-  id: string; // Ej: "CAMA-101"
+  id: string;
   roomNumber: string;
-  status: BedStateName; // El backend nos mandará el statusName acá
+  status: BedStateName;
   patientId: string | null;
   patientFullName?: string | null;
   patientDni?: string | null;

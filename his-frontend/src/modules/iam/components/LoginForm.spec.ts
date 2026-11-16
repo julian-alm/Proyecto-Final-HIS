@@ -5,17 +5,17 @@ import LoginForm from './LoginForm.vue';
 describe('LoginForm.vue', () => {
   
   it('debería emitir el evento "submit-login" con las credenciales al enviar el formulario', async () => {
-    // ARRANGE: Montamos el componente aislando su lógica
+    // ARRANGE
     const wrapper = mount(LoginForm, {
       props: { isLoading: false, errorMessage: '' }
     });
 
-    // ACT: Simulamos que el usuario escribe y aprieta Enter
+    // ACT
     await wrapper.find('#email').setValue('admin@hospital.com');
     await wrapper.find('#password').setValue('123456');
     await wrapper.find('form').trigger('submit.prevent');
 
-    // ASSERT: Verificamos que el componente haya escupido el evento correcto
+    // ASSERT
     expect(wrapper.emitted()).toHaveProperty('submit-login');
     const emitEvent = wrapper.emitted('submit-login');
     

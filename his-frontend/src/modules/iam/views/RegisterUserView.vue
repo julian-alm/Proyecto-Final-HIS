@@ -9,7 +9,6 @@ const form = reactive({
   email: '',
   passwordPlain: '',
   role: '',
-  // Nuevos campos exclusivos para doctores
   licenseNumber: '',
   specialty: ''
 });
@@ -48,7 +47,6 @@ const handleRegister = async () => {
   try {
     isLoading.value = true;
     
-    // 1. Registramos el usuario en IAM y guardamos la respuesta (que trae el ID generado)
     const newUser = await iamService.registerUser({ 
       fullName: form.fullName,
       email: form.email,
@@ -56,10 +54,9 @@ const handleRegister = async () => {
       role: form.role
     });
 
-    // 2. Si es DOCTOR, hacemos la segunda petición para guardar su perfil
     if (form.role === 'DOCTOR') {
       await apiClient.post('/staff/doctor-profile', {
-        userId: newUser.id, // El ID devuelto por tu use-case
+        userId: newUser.id,
         licenseNumber: form.licenseNumber,
         specialty: form.specialty
       });
@@ -67,7 +64,6 @@ const handleRegister = async () => {
 
     successMessage.value = `¡Usuario "${form.fullName}" registrado exitosamente!`;
 
-    // Limpiar formulario
     form.fullName = '';
     form.email = '';
     form.passwordPlain = '';
@@ -226,14 +222,11 @@ const getStatusClass = (isActive: boolean) => isActive ? 'dot-active' : 'dot-ina
 </template>
 
 <style scoped>
-/* Estilos intactos, agregada solo la animación slide-down */
 .slide-down { animation: slideDown 0.3s ease-out; }
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* Resto de tu CSS original */
 .register-page { max-width: 1200px; margin: 0 auto; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #0f172a; }
 .breadcrumb { font-size: 0.8rem; color: #94a3b8; font-weight: 500; display: block; margin-bottom: 0.25rem; }
 .page-header { margin-bottom: 2rem; }

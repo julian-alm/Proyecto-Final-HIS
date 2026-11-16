@@ -11,7 +11,7 @@ const emit = defineEmits<{
 }>();
 
 const fullName = ref('');
-const dni = ref(''); // <-- AÑADIDO: Estado para el DNI
+const dni = ref(''); 
 const email = ref('');
 const password = ref('');
 
@@ -20,7 +20,7 @@ const onSubmit = () => {
     fullName: fullName.value,
     email: email.value, 
     passwordPlain: password.value,
-    dni: dni.value // <-- AÑADIDO: Enviamos el DNI al componente padre
+    dni: dni.value 
   });
 };
 </script>

@@ -18,7 +18,6 @@ describe('DischargeBedUseCase', () => {
 
     beforeEach(() => {
         fakeRepo = new FakeBedRepository();
-        // Simulamos el emisor de eventos para no depender del framework
         mockEventEmitter = { emit: jest.fn() } as any;
         useCase = new DischargeBedUseCase(fakeRepo, mockEventEmitter);
     });
@@ -26,14 +25,14 @@ describe('DischargeBedUseCase', () => {
     it('debería dar de alta al paciente, pasar la cama a EN_LIMPIEZA y emitir evento', async () => {
         // ARRANGE
         const bed = new Bed('CAMA-101', 'Sala-1');
-        bed.assign('pac-123'); // Estado: OCUPADA
+        bed.assign('pac-123'); 
         await fakeRepo.save(bed);
         const command = new DischargeBedCommand('CAMA-101');
 
         // ACT
         await useCase.execute(command);
 
-        // ASSERT: Verificamos el estado (Caja Negra)
+        // ASSERT
         const updatedBed = await fakeRepo.findById('CAMA-101');
         expect(updatedBed?.statusName).toBe('EN_LIMPIEZA');
         expect(updatedBed?.patientId).toBeNull();
@@ -42,7 +41,7 @@ describe('DischargeBedUseCase', () => {
 
     it('debería lanzar excepción si la cama está libre', async () => {
         // ARRANGE
-        const bed = new Bed('CAMA-102', 'Sala-2'); // Estado por defecto: LIBRE
+        const bed = new Bed('CAMA-102', 'Sala-2'); 
         await fakeRepo.save(bed);
         
         // ACT & ASSERT

@@ -3,7 +3,7 @@ import { IBedRepository } from '../../domain/ports/bed.repository.port';
 import { Bed } from '../../domain/entities/bed.entity';
 import { DomainException } from '../../../../shared/domain/domain-exception';
 
-// FAKE TEST DOUBLE: Simula la BD en memoria
+
 class FakeBedRepository implements IBedRepository {
     public beds: Map<string, Bed> = new Map();
 
@@ -26,7 +26,7 @@ describe('AssignBedUseCase', () => {
     });
 
     it('debería asignar una cama y cambiar su estado a OCUPADAS cuando está libre', async () => {
-        // ARRANGE: Cama libre por defecto (FreeState)
+        // ARRANGE
         const bed = new Bed('CAMA-101', 'Sala-1');
         await fakeRepo.save(bed);
         const command = new AssignBedCommand('CAMA-101', 'paciente-456');
@@ -53,12 +53,12 @@ describe('AssignBedUseCase', () => {
     it('debería lanzar una excepción si se intenta asignar una cama ya ocupada', async () => {
         // ARRANGE
         const bed = new Bed('CAMA-102', 'Sala-2');
-        bed.assign('paciente-previo'); // Transiciona internamente a OccupiedState
+        bed.assign('paciente-previo'); 
         await fakeRepo.save(bed);
         
         const command = new AssignBedCommand('CAMA-102', 'paciente-nuevo');
 
-        // ACT & ASSERT: Verificamos el mensaje exacto de OccupiedState
+        // ACT & ASSERT
         await expect(useCase.execute(command)).rejects.toThrow(DomainException);
         await expect(useCase.execute(command)).rejects.toThrow('Error de concurrencia: La cama acaba de ser ocupada.');
     });
@@ -66,13 +66,13 @@ describe('AssignBedUseCase', () => {
     it('debería lanzar una excepción si se intenta asignar una cama en proceso de limpieza', async () => {
         // ARRANGE
         const bed = new Bed('CAMA-103', 'Sala-3');
-        bed.assign('paciente-previo'); // Pasa a OccupiedState
-        bed.discharge();               // Pasa a CleaningState
+        bed.assign('paciente-previo');
+        bed.discharge();              
         await fakeRepo.save(bed);
         
         const command = new AssignBedCommand('CAMA-103', 'paciente-nuevo');
 
-        // ACT & ASSERT: Verificamos el mensaje exacto de CleaningState
+        // ACT & ASSERT
         await expect(useCase.execute(command)).rejects.toThrow(DomainException);
         await expect(useCase.execute(command)).rejects.toThrow('No se puede asignar un paciente a una cama en limpieza.');
     });

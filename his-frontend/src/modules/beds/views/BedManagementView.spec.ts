@@ -3,7 +3,6 @@ import { mount, flushPromises } from '@vue/test-utils';
 import BedManagementView from './BedManagementView.vue';
 import { bedService } from '../services/bed-management.service';
 
-// 1. Mockeamos el servicio de camas entero
 vi.mock('../services/bed-management.service', () => ({
   bedService: {
     getBeds: vi.fn(),
@@ -16,10 +15,9 @@ vi.mock('../services/bed-management.service', () => ({
   }
 }));
 
-// 2. Mockeamos el Store DIRECTAMENTE sin instalar @pinia/testing
 vi.mock('../../iam/store/auth.store', () => ({
   useAuthStore: vi.fn(() => ({
-    userRole: 'ADMIN' // Forzamos que sea ADMIN para ver todos los botones
+    userRole: 'ADMIN'
   }))
 }));
 
@@ -29,24 +27,24 @@ describe('BedManagementView.vue', () => {
   });
 
   it('debería cargar y mostrar las camas con sus estados correctos al montarse', async () => {
-    // ARRANGE: Simulamos dos camas
+    // ARRANGE
     (bedService.getBeds as any).mockResolvedValue([
       { id: '1', roomNumber: '101', status: 'LIBRES' },
       { 
         id: '2', 
         roomNumber: '102', 
         status: 'OCUPADAS', 
-        patientId: 'uuid-paciente-123', // <-- AGREGAMOS ESTO
+        patientId: 'uuid-paciente-123',
         patientFullName: 'Mariano López', 
         patientDni: '12345678' 
       }
     ]);
 
-    // ACT: Montamos normal, sin configuraciones extra de Pinia
+    // ACT
     const wrapper = mount(BedManagementView);
     await flushPromises();
 
-    // ASSERT: Verificamos que se rendericen correctamente
+    // ASSERT
     expect(bedService.getBeds).toHaveBeenCalled();
     expect(wrapper.text()).toContain('HAB. 101');
     expect(wrapper.text()).toContain('Disponible'); 
@@ -66,15 +64,13 @@ describe('BedManagementView.vue', () => {
     const wrapper = mount(BedManagementView);
     await flushPromises();
 
-    // ACT: 1. Clic en "Ingresar"
+    // ACT
     await wrapper.find('.action-group .btn-teal').trigger('click');
     
-    // 2. Buscar paciente
     await wrapper.find('input[placeholder="Ej. 30.112.455"]').setValue('30112455');
     await wrapper.find('.search-row .btn-teal').trigger('click');
     await flushPromises();
 
-    // 3. Confirmar ingreso
     await wrapper.find('.modal-footer .btn-primary').trigger('click');
     await flushPromises();
 
@@ -94,10 +90,9 @@ describe('BedManagementView.vue', () => {
     const wrapper = mount(BedManagementView);
     await flushPromises();
 
-    // ACT: 1. Clic en "Procesar Alta"
+    // ACT
     await wrapper.find('.bed-actions .btn-light').trigger('click');
     
-    // 2. Clic en "Confirmar"
     await wrapper.find('.modal-footer .btn-primary').trigger('click');
     await flushPromises();
 

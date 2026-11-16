@@ -25,7 +25,7 @@ describe('UnblockBedUseCase', () => {
     it('debería desbloquear una cama y devolverla a LIBRES', async () => {
         // ARRANGE
         const bed = new Bed('CAMA-101', 'Sala-1');
-        bed.block(); // BLOQUEADA
+        bed.block(); 
         await fakeRepo.save(bed);
 
         // ACT
@@ -39,7 +39,7 @@ describe('UnblockBedUseCase', () => {
 
     it('debería lanzar excepción si la cama no está bloqueada', async () => {
         // ARRANGE
-        const bed = new Bed('CAMA-102', 'Sala-2'); // LIBRE
+        const bed = new Bed('CAMA-102', 'Sala-2'); 
         await fakeRepo.save(bed);
 
         // ACT & ASSERT

@@ -7,13 +7,11 @@ import { DeductSupplyStockUseCase, DeductSupplyStockCommand } from '../use-cases
 export class SupplyStockListener {
     constructor(private readonly deductSupplyStockUseCase: DeductSupplyStockUseCase) {}
 
-    // 1. EL CAMBIO CLAVE: Escuchar el evento exacto que dispara enfermería
     @OnEvent('medication.administered', { async: true })
     async handleMedicationAdministered(event: MedicationAdministeredEvent) {
         console.log(`\n[INVENTARIO - HU 3.1] Evento recibido:`, event);
         
-        // Mapeamos los campos que envió el Integrante 2
-        const supplyName = event.medicationName; // Viene directo del evento de enfermería
+        const supplyName = event.medicationName;
         const quantity = Number(event.quantity || 1);
         
         try {
@@ -21,7 +19,6 @@ export class SupplyStockListener {
                 new DeductSupplyStockCommand(supplyName, quantity),
             );
             
-            // 2. CORRECCIÓN: Mostrar updated.stock en lugar de updated.description
             console.log(
                 `-> [STOCK DESCONTADO]: Quedan ${updated.stock} unidades de "${updated.name}".\n`,
             );
