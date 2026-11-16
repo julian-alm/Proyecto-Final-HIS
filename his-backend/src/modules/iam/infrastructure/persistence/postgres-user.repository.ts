@@ -19,12 +19,10 @@ export class PostgresUserRepository implements IUserRepository {
   }
   
   async findAll(): Promise<User[]> {
-    // 1. Buscamos todos los registros usando TypeORM
     const records = await this.ormRepo.find({
-      order: { id: 'ASC' } // Ordenamos por ID para que la lista sea consistente
+      order: { id: 'ASC' }
     });
     
-    // 2. Mapeamos cada entidad ORM a tu entidad de Dominio (User)
     return records.map(record => this.toDomain(record));
   }
 

@@ -27,7 +27,7 @@ export interface BillCalculationResponse {
   consultationBaseCost?: number;
   patientAmount?: number;
   thirdPartyAmount?: number;
-  [key: string]: any; // Tolerante por si el caso de uso devuelve propiedades adicionales
+  [key: string]: any;
 }
 
 export interface PriceItemResponse {

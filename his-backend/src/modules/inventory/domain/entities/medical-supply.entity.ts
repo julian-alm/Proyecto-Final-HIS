@@ -3,6 +3,6 @@ export class MedicalSupply {
     public readonly id: string,
     public readonly name: string,
     public readonly stock: number,
-    public readonly description?: string, // Lo hacemos opcional con el "?"
+    public readonly description?: string,
   ) {}
 }

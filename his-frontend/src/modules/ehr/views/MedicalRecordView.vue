@@ -20,14 +20,8 @@ const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
 
 onMounted(async () => {
   if (authStore.userRole === 'PATIENT') {
-    const patientDniMapping: Record<string, string> = {
-      'Ana Rojas': '35123456',
-      'Carlos Gómez': '11223344',
-      'Carlos Gomez': '11223344'
-    };
-
-    const userName = (authStore as any).userFullName || '';
-    const userDni = patientDniMapping[userName];
+    // 👇 AHORA LEEMOS EL DNI DIRECTO DESDE TU MÓDULO IAM
+    const userDni = (authStore as any).userDni; 
 
     if (userDni) {
       dniInput.value = userDni;

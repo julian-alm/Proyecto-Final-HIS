@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-// Recibimos el estado de carga y el mensaje de error desde la Vista
 const props = defineProps<{
   isLoading: boolean;
   errorMessage?: string;
 }>();
 
-// Emitimos las credenciales hacia la Vista
 const emit = defineEmits<{
   (e: 'submit-login', payload: { email: string; passwordPlain: string }): void
 }>();

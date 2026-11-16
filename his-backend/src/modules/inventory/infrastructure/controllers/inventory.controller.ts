@@ -13,7 +13,6 @@ export class InventoryController {
         private readonly supplyRepository: ISupplyRepository,
     ) {}
 
-    // Función auxiliar para formatear: "iBuProFeNo 400MG" -> "Ibuprofeno 400mg"
     private formatSupplyName(name: string): string {
         if (!name) return '';
         const trimmed = name.trim();
@@ -27,7 +26,6 @@ export class InventoryController {
             throw new HttpException('Faltan datos obligatorios', HttpStatus.BAD_REQUEST);
         }
 
-        // Limpiamos los espacios y aplicamos el formato profesional
         const formattedName = this.formatSupplyName(body.medicationName);
 
         if (body.type === 'INGRESO') {
@@ -35,19 +33,17 @@ export class InventoryController {
             
             const supply = new MedicalSupply(
                 existing ? existing.id : uuidv4(),
-                existing ? existing.name : formattedName, // Usamos el nombre bien formateado si es nuevo
+                existing ? existing.name : formattedName,
                 Number(body.quantity),
                 existing ? existing.description : body.reason
             );
             
-            // Pasamos el motivo dinámico (body.reason) aquí
             await this.supplyRepository.save(supply, body.reason);
             return { message: 'Ingreso registrado correctamente' };
         } 
         
         if (body.type === 'EGRESO') {
             try {
-                // Pasamos el motivo dinámico (body.reason) aquí también
                 await this.supplyRepository.decrementStockAtomically(formattedName, Number(body.quantity), body.reason);
                 return { message: 'Egreso registrado correctamente' };
             } catch (error: any) {

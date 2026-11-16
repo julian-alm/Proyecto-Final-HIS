@@ -201,19 +201,16 @@ import type {
   PriceItemResponse
 } from '../types/billing.types';
 
-// Estado de búsqueda de paciente
 const dniQuery = ref('');
 const searchingPatient = ref(false);
 const selectedPatient = ref<PatientLookup | null>(null);
 
-// Disparar búsqueda al terminar de tipear 8 números (Mejora UX)
 watch(dniQuery, (newVal) => {
   if (newVal.length >= 8 && !searchingPatient.value) {
     handleSearchPatient();
   }
 });
 
-// Estado del formulario de Facturación
 const billForm = reactive<GenerateBillPayload>({
   patientId: '',
   coverageType: 'PRIVATE',
@@ -224,7 +221,6 @@ const loadingBill = ref(false);
 const billError = ref('');
 const lastCalculation = ref<BillCalculationResponse | null>(null);
 
-// Estado del formulario de Lista de Precios
 const priceForm = reactive<CreatePricePayload>({
   itemName: '',
   unitPrice: 0,
@@ -234,7 +230,6 @@ const loadingPrice = ref(false);
 const priceError = ref('');
 const priceSuccess = ref('');
 
-// Estado de Tablas en vivo
 const pricesList = ref<PriceItemResponse['item'][]>([]);
 const chargesList = ref<ChargeItem[]>([]);
 const loadingData = ref(false);
@@ -335,7 +330,6 @@ const handleSavePrice = async () => {
 </script>
 
 <style scoped>
-/* Tipografía y layout general */
 .billing-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -357,7 +351,6 @@ const handleSavePrice = async () => {
   margin-bottom: 1.5rem;
 }
 
-/* Tarjetas (Cards) */
 .card {
   background: #ffffff;
   padding: 1.5rem;
@@ -375,7 +368,6 @@ const handleSavePrice = async () => {
   color: #0f172a;
 }
 
-/* Formularios modernos */
 .form-layout { display: flex; flex-direction: column; gap: 1rem; flex: 1; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -394,7 +386,6 @@ input, select {
 input:focus, select:focus { border-color: #3b82f6; }
 input:disabled, select:disabled { background-color: #f8fafc; color: #94a3b8; }
 
-/* Inputs con prefijo ($) */
 .input-prefix {
   display: flex;
   align-items: center;
@@ -408,7 +399,6 @@ input:disabled, select:disabled { background-color: #f8fafc; color: #94a3b8; }
 .input-prefix input { border: none; padding-left: 0.4rem; width: 100%; border-radius: 0; }
 .input-prefix input:focus { border: none; }
 
-/* Búsqueda y Paciente */
 .search-row { display: flex; width: 100%; }
 .search-row input { width: 100%; }
 
@@ -426,7 +416,7 @@ input:disabled, select:disabled { background-color: #f8fafc; color: #94a3b8; }
 .patient-badge span { font-size: 0.75rem; color: #64748b; font-weight: 500;}
 .btn-text { background: none; border: none; color: #3b82f6; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
 
-/* Botones */
+
 .btn {
   border: none;
   padding: 0.65rem 1rem;
@@ -443,18 +433,16 @@ input:disabled, select:disabled { background-color: #f8fafc; color: #94a3b8; }
 .btn-blue:hover { background-color: #2563eb; }
 .btn:disabled { background-color: #cbd5e1; cursor: not-allowed; }
 
-/* Utilidades */
 .mt-1 { margin-top: 1rem; }
 .mt-auto { margin-top: auto; }
 .py-2 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
 
-/* Alertas */
 .alert { padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 500; }
 .alert-error { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 .alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 .loading-state { text-align: center; color: #64748b; padding: 2rem; font-size: 0.9rem;}
 
-/* --- TABLAS (Estilo Moderno) --- */
+
 .tables-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -492,7 +480,6 @@ input:disabled, select:disabled { background-color: #f8fafc; color: #94a3b8; }
 
 .clean-table tbody tr:last-child td { border-bottom: none; }
 
-/* Clases tipográficas para tablas */
 .fw-500 { font-weight: 500; color: #334155; }
 .fw-600 { font-weight: 600; }
 .fw-700 { font-weight: 700; color: #0f172a; }

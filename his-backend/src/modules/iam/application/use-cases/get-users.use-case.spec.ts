@@ -4,7 +4,6 @@ import { IUserRepository } from '../../domain/ports/user.repository.port';
 import { User } from '../../domain/entities/user.entity';
 import { UserRole } from '../../domain/entities/user-role.enum';
 
-// FAKE TEST DOUBLE
 class FakeUserRepository extends IUserRepository {
   public users: Map<string, User> = new Map();
 

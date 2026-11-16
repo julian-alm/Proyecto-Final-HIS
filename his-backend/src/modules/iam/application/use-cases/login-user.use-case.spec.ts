@@ -24,12 +24,16 @@ describe('LoginUserUseCase', () => {
   let fakeRepo: FakeUserRepository;
   let mockJwtService: jest.Mocked<JwtService>;
 
-  beforeEach(() => {
-    fakeRepo = new FakeUserRepository();
-    // Simulamos el servicio JWT para no depender del framework
-    mockJwtService = { signAsync: jest.fn().mockImplementation(async () => 'fake-jwt-token') } as any;
-    useCase = new LoginUserUseCase(fakeRepo, mockJwtService);
-  });
+ beforeEach(() => {
+      fakeRepo = new FakeUserRepository();
+      mockJwtService = { signAsync: jest.fn().mockImplementation(async () => 'fake-jwt-token') } as any;
+
+      const mockEntityManager = {
+        query: jest.fn().mockImplementation(async () => []) 
+      } as any;
+
+      useCase = new LoginUserUseCase(fakeRepo, mockJwtService, mockEntityManager);
+    });
 
   it('debería retornar el token y los datos del usuario si las credenciales son correctas', async () => {
     // ARRANGE: Creamos un usuario con contraseña encriptada
@@ -59,7 +63,7 @@ describe('LoginUserUseCase', () => {
     const user = new User('uuid-2', 'Ana Gomez', 'ana@hospital.com', passwordHash, 'ENFERMERO' as UserRole);
     await fakeRepo.save(user);
 
-    // ACT & ASSERT: Intentamos loguear con contraseña equivocada
+    // ACT & ASSERT
     await expect(useCase.execute('ana@hospital.com', 'ClaveEquivocada'))
       .rejects.toThrow('Credenciales inválidas o usuario inactivo.');
   });

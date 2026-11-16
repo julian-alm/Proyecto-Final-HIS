@@ -5,17 +5,22 @@ import { IUserRepository } from '../../domain/ports/user.repository.port';
 import { User } from '../../domain/entities/user.entity';
 import { UserRole } from '../../domain/entities/user-role.enum';
 import { DomainException } from '../../../../shared/domain/domain-exception';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 
 export interface RegisterPatientCommand {
   fullName: string;
   email: string;
   passwordPlain: string;
-  // Fijate que quitamos el "role" de acá
+  dni: string;
 }
 
 @Injectable()
 export class RegisterPatientUseCase {
-  constructor(private readonly userRepository: IUserRepository) {}
+  constructor(
+    private readonly userRepository: IUserRepository,
+    @InjectEntityManager() private readonly entityManager: EntityManager
+  ) {}
 
   async execute(command: RegisterPatientCommand) {
     const existing = await this.userRepository.findByEmail(command.email);
@@ -24,20 +29,41 @@ export class RegisterPatientUseCase {
     }
 
     const passwordHash = await bcrypt.hash(command.passwordPlain, 10);
-    const newPatient = new User(
-      randomUUID(),
+    const newUserId = randomUUID();
+    
+    const newPatientAuth = new User(
+      newUserId,
       command.fullName,
       command.email,
       passwordHash,
-      'PATIENT' as UserRole, // <- FORZAMOS EL ROL ACÁ
+      'PATIENT' as UserRole,
     );
+    const savedUser = await this.userRepository.save(newPatientAuth);
 
-    const saved = await this.userRepository.save(newPatient);
+    const existingPatientList = await this.entityManager.query(`
+      SELECT id FROM patients WHERE dni = $1 LIMIT 1
+    `, [command.dni]);
+
+    if (existingPatientList && existingPatientList.length > 0) {
+      await this.entityManager.query(`
+        UPDATE patients SET "userId" = $1 WHERE dni = $2
+      `, [savedUser.id, command.dni]);
+    } else {
+      const names = command.fullName.split(' ');
+      const firstName = names[0];
+      const lastName = names.slice(1).join(' ') || '';
+      
+      await this.entityManager.query(`
+        INSERT INTO patients (id, dni, "firstName", "lastName", "coverageType", "userId")
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [randomUUID(), command.dni, firstName, lastName, 'PRIVATE', savedUser.id]);
+    }
+
     return {
-      id: saved.id,
-      fullName: saved.fullName,
-      email: saved.email,
-      role: saved.role,
+      id: savedUser.id,
+      fullName: savedUser.fullName,
+      email: savedUser.email,
+      role: savedUser.role,
     };
   }
 }

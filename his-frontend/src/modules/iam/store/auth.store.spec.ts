@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAuthStore } from './auth.store';
 import { apiClient } from '../../../core/api/axios.client';
 
-// 1. Mockeamos la instancia de axios para no hacer peticiones reales al backend
 vi.mock('../../../core/api/axios.client', () => ({
   apiClient: {
     post: vi.fn(),
@@ -12,7 +11,6 @@ vi.mock('../../../core/api/axios.client', () => ({
 
 describe('Auth Store (Pinia)', () => {
   beforeEach(() => {
-    // 2. Antes de cada test, reiniciamos Pinia y el localStorage
     setActivePinia(createPinia());
     vi.clearAllMocks();
     localStorage.clear();
@@ -21,7 +19,7 @@ describe('Auth Store (Pinia)', () => {
   it('debería iniciar sesión correctamente, guardar en estado y localStorage', async () => {
     const store = useAuthStore();
     
-    // ARRANGE: Simulamos la respuesta exitosa del backend
+    // ARRANGE
     (apiClient.post as any).mockResolvedValue({
       data: {
         accessToken: 'fake-jwt-token',
@@ -29,17 +27,16 @@ describe('Auth Store (Pinia)', () => {
       }
     });
 
-    // ACT: Ejecutamos la acción del store
+    // ACT
     const result = await store.login('mariano@paciente.com', 'ClaveSegura123');
 
-    // ASSERT: Verificamos que todo se guardó donde corresponde
+    // ASSERT
     expect(result).toBe(true);
     expect(store.token).toBe('fake-jwt-token');
     expect(store.userRole).toBe('PATIENT');
     expect(store.isAuthenticated).toBe(true);
-    expect(store.isAdmin).toBe(false); // Porque es PATIENT
+    expect(store.isAdmin).toBe(false);
     
-    // Verificamos el localStorage
     expect(localStorage.getItem('accessToken')).toBe('fake-jwt-token');
     expect(localStorage.getItem('userRole')).toBe('PATIENT');
     expect(apiClient.post).toHaveBeenCalledWith('/iam/login', { 
@@ -51,7 +48,7 @@ describe('Auth Store (Pinia)', () => {
   it('debería limpiar el estado y el localStorage al cerrar sesión (logout)', () => {
     const store = useAuthStore();
     
-    // ARRANGE: Forzamos un estado de usuario logueado
+    // ARRANGE
     store.token = 'token-viejo';
     store.userRole = 'ADMIN';
     localStorage.setItem('accessToken', 'token-viejo');
@@ -60,7 +57,7 @@ describe('Auth Store (Pinia)', () => {
     // ACT
     store.logout();
 
-    // ASSERT: Todo debe quedar vacío
+    // ASSERT
     expect(store.token).toBeNull();
     expect(store.userRole).toBeNull();
     expect(store.isAuthenticated).toBe(false);
@@ -79,7 +76,8 @@ describe('Auth Store (Pinia)', () => {
     const payload = {
       fullName: 'Laura',
       email: 'laura@paciente.com',
-      passwordPlain: '123456'
+      passwordPlain: '123456',
+      dni: '12345678'
     };
 
     // ACT

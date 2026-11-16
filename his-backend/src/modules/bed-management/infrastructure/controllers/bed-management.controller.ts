@@ -9,8 +9,6 @@ import { UnblockBedUseCase, UnblockBedCommand } from '../../application/use-case
 import { DomainException } from '../../../../shared/domain/domain-exception';
 import { IsString, IsNotEmpty } from 'class-validator';
 import { BedOrmEntity } from '../persistence/bed.orm-entity';
-
-// Decoradores del Módulo IAM
 import { RolesGuard } from '../../../iam/infrastructure/guards/roles.guard';
 import { Roles } from '../../../iam/infrastructure/guards/roles.guard';
 import { UserRole } from '../../../iam/domain/entities/user-role.enum';
@@ -30,8 +28,6 @@ export class BedManagementController {
         private readonly cleanBedUseCase: CleanBedUseCase,
         private readonly blockBedUseCase: BlockBedUseCase,
         private readonly unblockBedUseCase: UnblockBedUseCase,
-        
-        // Repositorio inyectado correctamente junto a los demás casos de uso
         @InjectRepository(BedOrmEntity)
         private readonly bedRepo: Repository<BedOrmEntity>,
     ) {}
@@ -57,12 +53,9 @@ export class BedManagementController {
         }));
     }
 
-    // No olvides importar BlockBedCommand y UnblockBedCommand arriba
-
     @Patch(':id/block')
     @Roles(UserRole.ADMIN)
     async blockBed(@Param('id') id: string) {
-        // Envolvemos el id en su Command correspondiente
         await this.blockBedUseCase.execute(new BlockBedCommand(id));
         return { message: 'Cama enviada a mantenimiento.' };
     }
@@ -70,7 +63,6 @@ export class BedManagementController {
     @Patch(':id/unblock')
     @Roles(UserRole.ADMIN)
     async unblockBed(@Param('id') id: string) {
-        // Envolvemos el id en su Command correspondiente
         await this.unblockBedUseCase.execute(new UnblockBedCommand(id));
         return { message: 'Cama habilitada nuevamente.' };
     }

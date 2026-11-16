@@ -6,7 +6,7 @@ export class MedicalSupplyOrmEntity {
   id: string;
 
   @Column({ unique: true })
-  name: string; // Ej: "Ibuprofeno 400mg" (clave de negocio compartida con Billing)
+  name: string;
 
   @Column({ nullable: true })
   description: string;

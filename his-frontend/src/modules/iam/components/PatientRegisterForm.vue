@@ -7,10 +7,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'submit-register', payload: { fullName: string; email: string; passwordPlain: string }): void
+  (e: 'submit-register', payload: { fullName: string; email: string; passwordPlain: string; dni: string }): void
 }>();
 
 const fullName = ref('');
+const dni = ref(''); 
 const email = ref('');
 const password = ref('');
 
@@ -18,7 +19,8 @@ const onSubmit = () => {
   emit('submit-register', { 
     fullName: fullName.value,
     email: email.value, 
-    passwordPlain: password.value 
+    passwordPlain: password.value,
+    dni: dni.value 
   });
 };
 </script>
@@ -33,6 +35,19 @@ const onSubmit = () => {
         v-model="fullName" 
         type="text" 
         placeholder="Ej. Juan Pérez" 
+        required 
+        :disabled="isLoading"
+      />
+    </div>
+
+    <!-- NUEVO CAMPO: DNI -->
+    <div class="input-group">
+      <label for="dni">Número de DNI</label>
+      <input 
+        id="dni" 
+        v-model="dni" 
+        type="text" 
+        placeholder="Ej. 30112455" 
         required 
         :disabled="isLoading"
       />

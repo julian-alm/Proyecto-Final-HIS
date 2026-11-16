@@ -4,8 +4,6 @@ import { BillingController } from './infrastructure/controllers/billing.controll
 import { CalculateConsultationCostUseCase } from './application/use-cases/calculate-consultation-cost.use-case';
 import { ChargeOrmEntity } from './infrastructure/persistance/charge.orm-entity';
 import { MedicationAdministeredListener } from './application/listeners/medication-administered.listener';
-
-// IMPORTANTE: Importamos el módulo entero de IAM
 import { IamModule } from '../iam/iam.module'; 
 import { PriceListOrmEntity } from './infrastructure/persistance/price-list.orm-entity';
 import { EhrModule } from '../ehr/ehr.module';

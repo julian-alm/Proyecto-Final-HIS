@@ -22,13 +22,10 @@ export class BlockBedUseCase {
             throw new DomainException('Cama no encontrada en el sistema.');
         }
 
-        // 1. El Patrón State valida y pasa la cama a BLOQUEADAS
         bed.block();
 
-        // 2. Persistimos con control de versión
         await this.bedRepository.save(bed);
 
-        // 3. Emitimos evento para los monitores de administración y maestranza
         this.eventEmitter.emit(
             'bed.status.changed',
             new BedStatusChangedEvent(bed.id, bed.roomNumber, bed.statusName)

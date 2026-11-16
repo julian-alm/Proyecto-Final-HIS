@@ -13,17 +13,15 @@ const isLoading = ref(false);
 
 const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
 
-const handleRegister = async (data: { fullName: string; email: string; passwordPlain: string }) => {
+const handleRegister = async (data: { fullName: string; email: string; passwordPlain: string; dni: string }) => {
   try {
     errorMessage.value = '';
     isLoading.value = true;
     
     await authStore.registerPatient(data); 
     
-    // Mostramos el mensaje de éxito usando el componente de tu compañero
     toastRef.value?.show('¡Registro exitoso! Redirigiendo al login...', 'success');
     
-    // Le damos 2 segundos al usuario para que lea el mensaje antes de cambiar de pantalla
     setTimeout(() => {
       router.push('/login');
     }, 2000);
@@ -32,7 +30,6 @@ const handleRegister = async (data: { fullName: string; email: string; passwordP
     const msg = error.response?.data?.message || 'Ocurrió un error al intentar registrar la cuenta.';
     errorMessage.value = msg;
     
-    // También podemos aprovecharlo para mostrar los errores visualmente mejor
     toastRef.value?.show(msg, 'error');
   } finally {
     isLoading.value = false;
@@ -78,7 +75,6 @@ const handleRegister = async (data: { fullName: string; email: string; passwordP
 </template>
 
 <style scoped>
-/* (Acá van exactamente los mismos estilos que ya tenías en la vista, te los dejo abajo para que copies y pegues completo) */
 .register-layout {
   display: flex;
   min-height: 100vh;

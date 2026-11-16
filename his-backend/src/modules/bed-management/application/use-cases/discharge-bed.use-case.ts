@@ -22,13 +22,10 @@ export class DischargeBedUseCase {
             throw new DomainException('Cama no encontrada en el sistema.');
         }
 
-        // 1. El Patrón State valida que esté OCUPADA, quita al paciente y la pasa a EN_LIMPIEZA
         bed.discharge();
 
-        // 2. Persistimos con control de versión
         await this.bedRepository.save(bed);
 
-        // 3. Emitimos evento para los monitores de administración y maestranza
         this.eventEmitter.emit(
             'bed.status.changed',
             new BedStatusChangedEvent(bed.id, bed.roomNumber, bed.statusName)

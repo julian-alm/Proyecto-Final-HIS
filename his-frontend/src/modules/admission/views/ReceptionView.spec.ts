@@ -1,13 +1,22 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ReceptionView from './ReceptionView.vue';
-
 import { AdmissionService } from '../services/admission.service';
 
+// 1. Mock del servicio de admisión
 vi.mock('../services/admission.service', () => ({
     AdmissionService: {
         registerPatient: vi.fn()
     }
+}));
+
+// 2. Mock MANUAL del store (Sin librerías externas, manteniendo el Principio Hermético)
+vi.mock('../../iam/store/auth.store', () => ({
+    useAuthStore: vi.fn(() => ({
+        isAuthenticated: true,
+        userRole: 'RECEPTIONIST',
+        userId: 'recepcionista-123'
+    }))
 }));
 
 describe('ReceptionView.vue', () => {
@@ -16,13 +25,14 @@ describe('ReceptionView.vue', () => {
     });
 
     it('debe enviar el formulario, llamar al servicio y limpiar los campos al tener éxito', async () => {
-        // 1. ARRANGE (Organizar)
+        // 1. ARRANGE
+        // Ya no necesitamos inyectar plugins globales, el mock manual hace todo el trabajo
         const wrapper = mount(ReceptionView);
 
         const mockResponse = { data: { patientId: { id: 'paciente-uuid-9999' } } };
         (AdmissionService.registerPatient as any).mockResolvedValue(mockResponse);
 
-        // 2. ACT (Actuar)
+        // 2. ACT
         const inputs = wrapper.findAll('input[type="text"]');
 
         await inputs[0].setValue('12345678'); 
@@ -34,7 +44,7 @@ describe('ReceptionView.vue', () => {
 
         await flushPromises();
 
-        // 3. ASSERT (Afirmar)
+        // 3. ASSERT
         expect(AdmissionService.registerPatient).toHaveBeenCalledWith({
             dni: '12345678',
             firstName: 'Ramiro',
@@ -49,20 +59,19 @@ describe('ReceptionView.vue', () => {
     });
 
     it('debe mostrar un mensaje de error si falla la llamada al backend', async () => {
-        // 1. ARRANGE (Organizar)
+        // 1. ARRANGE
         const wrapper = mount(ReceptionView);
 
         (AdmissionService.registerPatient as any).mockRejectedValue(new Error('Error de red'));
 
-        // 2. ACT (Actuar)
+        // 2. ACT
         const inputs = wrapper.findAll('input[type="text"]');
         await inputs[0].setValue('12345678'); 
         await wrapper.find('form').trigger('submit');
         await flushPromises();
 
-        // 3. ASSERT (Afirmar)
+        // 3. ASSERT
         expect((inputs[0].element as HTMLInputElement).value).toBe('12345678');
-
         expect(wrapper.html()).toContain('Hubo un error al registrar al paciente');
     });
 });
