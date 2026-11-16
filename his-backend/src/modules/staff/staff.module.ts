@@ -20,10 +20,8 @@ import { IamModule } from '../iam/iam.module';
     exports: [TypeOrmDoctorProfileRepository]
 })
 export class StaffModule implements OnModuleInit {
-    // Inyectamos la conexión directa a la base de datos
     constructor(@InjectEntityManager() private readonly entityManager: EntityManager) {}
 
-    // 👇 ESTO LO HACE AUTOMÁTICO: Se ejecuta solo cada vez que arranca el backend
     async onModuleInit() {
         try {
                 await this.entityManager.query(`
