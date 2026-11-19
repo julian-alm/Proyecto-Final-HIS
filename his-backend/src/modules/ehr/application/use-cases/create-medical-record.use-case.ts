@@ -21,7 +21,7 @@ export class CreateMedicalRecordUseCase {
     const existingRecord = await this.medicalRecordRepository.findByPatientId(patientId);
     
     if (existingRecord) {
-      // Si ya tiene, devolvemos la existente o lanzamos el error controlado
+      // Si ya tiene, devolvemos la existente
       throw new Error(`El paciente ${patientId} ya tiene una historia clínica activa.`);
     }
 

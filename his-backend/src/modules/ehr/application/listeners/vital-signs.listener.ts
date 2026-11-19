@@ -17,7 +17,7 @@ export class VitalSignsListener {
     try {
       await this.addProgressNoteUseCase.execute({
         patientId: event.patientId,
-        doctorId: 'SISTEMA-ENFERMERIA', // Usamos un ID genérico para saber que vino automático
+        doctorId: 'SISTEMA-ENFERMERIA',
         note: noteText,
       });
       console.log('EHR Module: Signos vitales anexados a la historia clínica exitosamente.');

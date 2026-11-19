@@ -39,7 +39,6 @@ export class EhrController {
   }
 
   @Get('patients/dni/:dni')
-  // 👇 ACÁ ESTÁ EL CAMBIO: Agregado UserRole.PATIENT para que NestJS no bloquee la consulta
   @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.DOCTOR, UserRole.NURSE, UserRole.PATIENT)
   async getPatientByDni(@Param('dni') dni: string) {
     const patient = await this.patientRepository.findByDni(dni);

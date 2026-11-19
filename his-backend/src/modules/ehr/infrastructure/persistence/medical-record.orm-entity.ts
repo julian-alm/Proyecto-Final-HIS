@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('medical_records') // Este será el nombre de la tabla en PostgreSQL
+@Entity('medical_records')
 export class MedicalRecordOrmEntity {
   @PrimaryColumn('uuid')
   id: string;
@@ -11,18 +11,15 @@ export class MedicalRecordOrmEntity {
   @Column({ name: 'blood_type', type: 'varchar', length: 10, nullable: true })
   bloodType: string | null;
 
-  // Usamos jsonb (JSON binario) que es excelente en PostgreSQL para guardar arrays
   @Column({ type: 'jsonb', default: [] })
   allergies: string[];
 
   @Column({ name: 'chronic_conditions', type: 'jsonb', default: [] })
   chronicConditions: string[];
 
-  // Guardamos el array de objetos de evoluciones médicas también como JSON
   @Column({ name: 'progress_notes', type: 'jsonb', default: [] })
   progressNotes: { doctorId: string; note: string; date: Date }[];
 
-  // 👇 AGREGAMOS LA COLUMNA PARA LOS PROTOCOLOS ACÁ
   @Column({ name: 'care_protocols', type: 'jsonb', default: [] })
   careProtocols: any[];
 

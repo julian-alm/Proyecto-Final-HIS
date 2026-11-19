@@ -19,11 +19,8 @@ export class VitalSignsRecordedListener {
     
     if (record) {
       // 2. Acá deberíamos agregar los signos vitales al historial del paciente
-      // (Podemos agregar un array de "vitalSignsHistory" en tu Entidad más adelante)
       console.log(`[EHR Module] Signos vitales anexados a la historia clínica del paciente ${patientId}`);
       console.log(`Datos registrados: Temp: ${temperature}, Presión: ${bloodPressure}, FC: ${heartRate}`);
-      
-      // await this.medicalRecordRepository.save(record);
     }
   }
 }

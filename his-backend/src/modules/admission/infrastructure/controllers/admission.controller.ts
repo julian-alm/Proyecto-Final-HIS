@@ -13,6 +13,9 @@ import { GetDoctorAgendaUseCase } from '../../application/use-case/get-doctor-ag
 import { MoveToWaitingRoomUseCase } from '../../application/use-case/change-appointment-status.use-cases';
 import { CompleteAppointmentUseCase } from '../../application/use-case/change-appointment-status.use-cases';
 import { MoveToConsultingRoomUseCase } from '../../application/use-case/change-appointment-status.use-cases';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
+import { TriageOrmEntity } from '../persistence/triage.orm-entity'; 
 
 export class BookAppointmentDto {
     @IsString()
@@ -56,6 +59,9 @@ export class AdmissionController {
         private readonly moveToWaitingRoomUseCase: MoveToWaitingRoomUseCase,
         private readonly completeAppointmentUseCase: CompleteAppointmentUseCase,
         private readonly moveToConsultingRoomUseCase: MoveToConsultingRoomUseCase,
+        @InjectEntityManager()
+        private readonly entityManager: EntityManager,
+        
     ) {}
 
     @Post('appointments')
@@ -182,5 +188,63 @@ export class AdmissionController {
     async moveToConsultingRoom(@Param('id') id: string) {
         await this.moveToConsultingRoomUseCase.execute(id);
         return { message: 'Turno actualizado a EN_CONSULTORIO' };
+    }
+
+    @Get('triage/queue')
+    @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.RECEPTIONIST)
+    async getTriageQueue() {
+        // 1. Traemos la cola ordenada: primero por nivel y después por orden de llegada
+        const queue = await this.entityManager.find(TriageOrmEntity, {
+            where: { status: 'EN_ESPERA' },
+            order: { level: 'ASC', arrivalTime: 'ASC' },
+        });
+
+        // 2. Buscamos nombre y DNI del paciente para mostrarlos lindos en el front
+        const enrichedQueue = await Promise.all(
+            queue.map(async (entry) => {
+                let patientName = 'Paciente';
+                let patientDni = entry.patientId;
+                try {
+                    const rows = await this.entityManager.query(
+                        `SELECT * FROM patients WHERE id::text = $1 OR dni = $1 LIMIT 1`,
+                        [entry.patientId]
+                    );
+                    if (rows.length > 0) {
+                        const p = rows[0];
+                        const first = p.firstName || p.first_name || '';
+                        const last = p.lastName || p.last_name || '';
+                        patientName = (p.fullName || `${first} ${last}`).trim() || 'Paciente';
+                        patientDni = p.dni || entry.patientId;
+                    }
+                } catch {
+                    
+                }
+
+                return {
+                    id: entry.id,
+                    patientId: entry.patientId,
+                    patientName,
+                    patientDni,
+                    level: entry.level,
+                    symptoms: entry.symptoms,
+                    arrivalTime: entry.arrivalTime,
+                    status: entry.status,
+                };
+            })
+        );
+
+        return enrichedQueue;
+    }
+
+    @Patch('triage/:id/attend')
+    @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE)
+    async attendTriagePatient(@Param('id') id: string) {
+        const entry = await this.entityManager.findOne(TriageOrmEntity, { where: { id } });
+        if (!entry) {
+            throw new HttpException('Registro de triaje no encontrado', HttpStatus.NOT_FOUND);
+        }
+        entry.status = 'ATENDIDO';
+        await this.entityManager.save(entry);
+        return { message: 'Paciente tomado para atención de guardia' };
     }
 }

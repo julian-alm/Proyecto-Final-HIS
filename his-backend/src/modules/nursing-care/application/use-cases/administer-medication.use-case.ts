@@ -119,14 +119,14 @@ export class AdministerMedicationUseCase {
 
     const id = Math.random().toString(36).substring(2, 9);
 
-    // 2. Guardar la administración
+    // 1. Instanciamos la Entidad
     const administration = new MedicationAdministration(
       id,
       command.patientId,
       command.nurseId,
       canonicalName,
       command.dose,
-      command.quantity,
+      command.quantity, 
       new Date(command.scheduledTime),
       new Date(command.administeredTime),
     );
@@ -136,9 +136,9 @@ export class AdministerMedicationUseCase {
     // 3. Emitir el evento solo si pasó todas las validaciones
     const event = new MedicationAdministeredEvent(
       administration.patientId,
-      canonicalName,
-      command.quantity,
-      administration.administeredTime,
+      administration.medicationName,
+      command.quantity, 
+      administration.administeredTime
     );
 
     this.eventEmitter.emit('medication.administered', event);
