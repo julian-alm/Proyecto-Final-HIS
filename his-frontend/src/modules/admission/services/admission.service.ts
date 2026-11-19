@@ -17,7 +17,7 @@ export const AdmissionService = {
     },
 
     getTriageQueue() {
-        return apiClient.get('/admission/triage');
+        return apiClient.get('/admission/triage/queue');
     },
 
     getAppointments() {
@@ -66,5 +66,9 @@ export const AdmissionService = {
 
     getAssignedPatients() {
         return apiClient.get('/staff/doctors/mis-pacientes');
-    }
+    },
+
+   attendTriagePatient(triageId: string) {
+    return apiClient.patch(`/admission/triage/${triageId}/attend`);
+   },
 };

@@ -12,8 +12,6 @@ import { VitalSignsListener } from './application/listeners/vital-signs.listener
 import { GetMedicalRecordUseCase } from './application/use-cases/get-medical-record.use-case';
 import { RegisterPatientUseCase } from './application/use-cases/register-patient.use-case';
 import { PatientOrmEntity } from '../ehr/infrastructure/persistence/patient.orm-entity';
-
-// Importá tu módulo IAM
 import { IamModule } from '../iam/iam.module'; 
 
 @Module({
@@ -39,7 +37,6 @@ import { IamModule } from '../iam/iam.module';
       useClass: TypeOrmPatientRepository 
     },
   ],
-  // 👇 ACÁ ESTÁ EL CAMBIO: Exportamos también IMedicalRecordRepository
   exports: [IPatientRepository, IMedicalRecordRepository],
 })
 export class EhrModule {}

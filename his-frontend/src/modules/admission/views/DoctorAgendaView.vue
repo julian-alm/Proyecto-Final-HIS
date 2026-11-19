@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { AdmissionService } from '../services/admission.service';
 import { useAuthStore } from '../../iam/store/auth.store';
@@ -10,6 +10,7 @@ const router = useRouter();
 
 const agenda = ref<any[]>([]);
 const assignedPatients = ref<any[]>([]);
+const triageQueue = ref<any[]>([]);
 const isLoading = ref(true);
 const isLoadingPatients = ref(true);
 const toastRef = ref<InstanceType<typeof ToastAlert> | null>(null);
@@ -19,6 +20,25 @@ const showConfirmModal = ref(false);
 const appointmentToComplete = ref('');
 
 const timeZoneAR = 'America/Argentina/Buenos_Aires';
+
+// Si es DOCTOR, filtra la cola para ver SOLO a sus pacientes asignados (ADMIN ve todos)
+const filteredTriageQueue = computed(() => {
+  const role = (authStore as any).userRole || (authStore as any).role || (authStore as any).user?.role;
+  if (role === 'ADMIN') return triageQueue.value;
+
+  return triageQueue.value.filter((entry: any) =>
+    assignedPatients.value.some(
+      (p: any) =>
+        String(p.dni) === String(entry.patientDni) ||
+        (p.id && String(p.id) === String(entry.patientId))
+    )
+  );
+});
+
+// Detecta si hay algún paciente en Riesgo Vital (Código Rojo = 1) entre SUS pacientes
+const codeRedPatients = computed(() =>
+  filteredTriageQueue.value.filter((entry: any) => Number(entry.level) === 1)
+);
 
 const fetchAgenda = async () => {
   const doctorId = authStore.userId;
@@ -40,14 +60,21 @@ const fetchAgenda = async () => {
   }
 };
 
+const fetchTriageQueue = async () => {
+  try {
+    const res = await AdmissionService.getTriageQueue();
+    const data = res?.data ?? res;
+    triageQueue.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error al cargar la cola de triaje', error);
+  }
+};
+
 const fetchAssignedPatients = async () => {
   try {
     const response = await AdmissionService.getAssignedPatients();
-    
-    // Esta línea saca los datos limpios vengan como vengan de Axios
     const resultado = response.data || response;
     assignedPatients.value = resultado.data || resultado;
-    
   } catch (error) {
     console.error('Error al cargar pacientes vinculados', error);
   } finally {
@@ -57,10 +84,12 @@ const fetchAssignedPatients = async () => {
 
 onMounted(() => {
   fetchAgenda();
+  fetchTriageQueue();
   fetchAssignedPatients();
   refreshInterval = setInterval(() => {
     fetchAgenda();
-  }, 30000);
+    fetchTriageQueue();
+  }, 5000);
 });
 
 onUnmounted(() => {
@@ -68,6 +97,22 @@ onUnmounted(() => {
     clearInterval(refreshInterval);
   }
 });
+
+const handleAttendTriage = async (triageId: string) => {
+  try {
+    await AdmissionService.attendTriagePatient(triageId);
+    toastRef.value?.show('Paciente de guardia tomado para atención.', 'success');
+    await fetchTriageQueue();
+  } catch (error) {
+    toastRef.value?.show('Error al tomar el paciente de guardia.', 'error');
+  }
+};
+
+const getTriageBadge = (level: number) => {
+  if (level === 1) return { label: 'ROJO - Riesgo Vital', class: 'triage-red' };
+  if (level === 2) return { label: 'AMARILLO - Urgente', class: 'triage-yellow' };
+  return { label: 'VERDE - Menor', class: 'triage-green' };
+};
 
 const handleCallPatient = async (appointmentId: string) => {
   try {
@@ -124,6 +169,66 @@ const goToHCE = (dni: string) => {
       <h1>Mi Panel de Control</h1>
       <p class="subtitle">Dr/a. {{ authStore.userFullName }}</p>
     </header>
+
+    <!-- ALERTA DESTACADA CÓDIGO ROJO (HU 3.1) -->
+    <div v-if="codeRedPatients.length > 0" class="code-red-banner mb-4">
+      <div class="code-red-header">
+        <strong>🚨 ALERTA CÓDIGO ROJO - RIESGO VITAL EN GUARDIA ({{ codeRedPatients.length }})</strong>
+      </div>
+      <div v-for="urgent in codeRedPatients" :key="urgent.id" class="code-red-item">
+        <div>
+          <strong>{{ urgent.patientName }}</strong> (DNI: {{ urgent.patientDni }}) —
+          <span>Síntomas: {{ urgent.symptoms }}</span>
+          <small class="ml-2">({{ formatTime(urgent.arrivalTime) }})</small>
+        </div>
+        <button @click="handleAttendTriage(urgent.id)" class="btn-action btn-urgent">
+          Atender Urgencia Ya
+        </button>
+      </div>
+    </div>
+
+    <!-- COLA DE GUARDIA / TRIAJE ORDENADA POR PRIORIDAD -->
+    <section class="panel mb-4">
+      <h2>Cola de Guardia (Triaje)</h2>
+      <table class="agenda-table">
+        <thead>
+          <tr>
+            <th>Prioridad</th>
+            <th>Llegada</th>
+            <th>Paciente</th>
+            <th>Síntomas</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="entry in filteredTriageQueue"
+            :key="entry.id"
+            :class="{ 'row-code-red': entry.level === 1 }"
+          >
+            <td>
+              <span :class="['triage-badge', getTriageBadge(entry.level).class]">
+                {{ getTriageBadge(entry.level).label }}
+              </span>
+            </td>
+            <td>{{ formatTime(entry.arrivalTime) }}</td>
+            <td>
+              <strong>{{ entry.patientName }}</strong>
+              <div class="text-muted" style="font-size: 0.85em;">DNI: {{ entry.patientDni }}</div>
+            </td>
+            <td>{{ entry.symptoms }}</td>
+            <td>
+              <button @click="handleAttendTriage(entry.id)" class="btn-action btn-call">
+                Atender
+              </button>
+            </td>
+          </tr>
+          <tr v-if="filteredTriageQueue.length === 0">
+            <td colspan="5" class="empty-state">No hay pacientes en espera en la guardia.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
     <section class="panel mb-4">
       <h2>Turnos de Hoy</h2>
@@ -226,6 +331,40 @@ const goToHCE = (dni: string) => {
 .agenda-header h1 { color: #2c3e50; margin-bottom: 5px; }
 .subtitle { color: #7f8c8d; font-size: 1.1em; margin-top: 0; }
 .mb-4 { margin-bottom: 30px; }
+
+.code-red-banner {
+  background: #c0392b;
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 2px solid #922b21;
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.35);
+  animation: pulse-red 2s infinite;
+}
+.code-red-header { font-size: 1.05rem; margin-bottom: 10px; }
+.code-red-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+.btn-urgent { background: #fff; color: #c0392b !important; }
+.btn-urgent:hover { background: #f9ebea; }
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.6); }
+  50% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+}
+
+.row-code-red { background-color: #fdedec; border-left: 5px solid #e74c3c; }
+.triage-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.78em; font-weight: bold; display: inline-block; }
+.triage-red { background: #e74c3c; color: #fff; }
+.triage-yellow { background: #f39c12; color: #fff; }
+.triage-green { background: #27ae60; color: #fff; }
 
 .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .panel h2 { margin-top: 0; color: #2c3e50; font-size: 1.3rem; margin-bottom: 15px; }

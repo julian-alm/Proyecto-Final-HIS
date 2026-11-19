@@ -22,7 +22,6 @@ export class AdministerMedicationCommand {
   @IsNotEmpty()
   dose: string;
 
-  // <-- AGREGAMOS QUANTITY: Así NestJS no te tira el error rojo
   @IsNumber()
   @IsNotEmpty()
   quantity: number;
@@ -47,14 +46,14 @@ export class AdministerMedicationUseCase {
   async execute(command: AdministerMedicationCommand): Promise<MedicationAdministration> {
     const id = Math.random().toString(36).substring(2, 9);
 
-    // 1. Instanciamos la Entidad (sumamos el command.quantity)
+    // 1. Instanciamos la Entidad
     const administration = new MedicationAdministration(
       id,
       command.patientId,
       command.nurseId,
       command.medicationName,
       command.dose,
-      command.quantity, // <-- Se lo pasamos al constructor de la entidad
+      command.quantity, 
       new Date(command.scheduledTime),
       new Date(command.administeredTime)
     );
@@ -66,7 +65,7 @@ export class AdministerMedicationUseCase {
     const event = new MedicationAdministeredEvent(
       administration.patientId,
       administration.medicationName,
-      command.quantity, // <-- SACAMOS EL 1 HARDCODEADO y pasamos la cantidad real
+      command.quantity, 
       administration.administeredTime
     );
 

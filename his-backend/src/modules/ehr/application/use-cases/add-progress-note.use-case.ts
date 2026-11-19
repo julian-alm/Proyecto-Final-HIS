@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IMedicalRecordRepository } from '../../domain/interfaces/medical-record.repository';
 
-// Este DTO (Data Transfer Object) define qué datos necesitamos para esta acción
+// Este DTO define qué datos necesitamos para esta acción
 export interface AddProgressNoteDto {
   patientId: string;
   doctorId: string;

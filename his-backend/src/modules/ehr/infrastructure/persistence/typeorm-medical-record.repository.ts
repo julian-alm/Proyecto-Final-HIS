@@ -13,7 +13,6 @@ export class TypeOrmMedicalRecordRepository implements IMedicalRecordRepository 
   ) {}
 
   async save(record: MedicalRecord): Promise<void> {
-    // Convertimos la Entidad de Dominio a la Entidad de Base de Datos
     const ormEntity = this.repository.create({
       id: record.id,
       patientId: record.patientId,
@@ -21,7 +20,6 @@ export class TypeOrmMedicalRecordRepository implements IMedicalRecordRepository 
       allergies: record.allergies,
       chronicConditions: record.chronicConditions,
       progressNotes: record.progressNotes,
-      // 👇 1. LO AGREGAMOS PARA QUE SE GUARDE EN LA BASE DE DATOS
       careProtocols: record.careProtocols,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
@@ -36,8 +34,7 @@ export class TypeOrmMedicalRecordRepository implements IMedicalRecordRepository 
     if (!ormEntity) {
       return null;
     }
-
-    // Convertimos la Entidad de Base de Datos de vuelta a tu Entidad de Dominio
+    
     return new MedicalRecord(
       ormEntity.id,
       ormEntity.patientId,
@@ -47,7 +44,6 @@ export class TypeOrmMedicalRecordRepository implements IMedicalRecordRepository 
       ormEntity.progressNotes,
       ormEntity.createdAt,
       ormEntity.updatedAt,
-      // 👇 2. LO AGREGAMOS PARA QUE SE MANDE AL FRONTEND
       ormEntity.careProtocols,
     );
   }
