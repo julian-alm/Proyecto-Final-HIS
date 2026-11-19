@@ -1,7 +1,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { MedicationAdministeredEvent } from '../../../../shared/domain/events/medication-administered.event';
 import { ChargeOrmEntity } from '../../infrastructure/persistance/charge.orm-entity';
@@ -27,12 +27,19 @@ export class MedicationAdministeredListener {
     this.logger.log(`Evento asíncrono [${event.eventId}] recibido.`);
 
     const priceItem = await this.priceListRepo.findOne({
-      where: { itemName: event.medicationName },
+      where: { itemName: ILike(event.medicationName.trim()) },
     });
-    const unitPrice = priceItem ? Number(priceItem.unitPrice) : 1000;
 
+    if (!priceItem) {
+      this.logger.warn(
+        `El insumo "${event.medicationName}" no figura en la lista de precios. No se generará cargo para el evento [${event.eventId}].`,
+      );
+      return;
+    }
+
+    const unitPrice = Number(priceItem.unitPrice);
     const totalCost = unitPrice * Number(event.quantity || 1);
-    const concept = `Insumos de Farmacia: ${event.medicationName}`;
+    const concept = `Insumos de Farmacia: ${priceItem.itemName}`;
 
     let patient = null;
     try {
@@ -48,14 +55,9 @@ export class MedicationAdministeredListener {
     const strategy = BillingStrategyFactory.getStrategy(coverageType as any);
     const calculation = strategy.calculateCharges(totalCost);
 
-    const patientAmount =
-      calculation.patientAmount ??
-      totalCost;
+    const patientAmount = calculation.patientAmount ?? totalCost;
+    const thirdPartyAmount = calculation.thirdPartyAmount ?? totalCost - patientAmount;
 
-    const thirdPartyAmount =
-      calculation.thirdPartyAmount ??
-      totalCost - patientAmount;
-      
     const charge = this.chargeRepo.create({
       id: randomUUID(),
       patientId: event.patientId,
